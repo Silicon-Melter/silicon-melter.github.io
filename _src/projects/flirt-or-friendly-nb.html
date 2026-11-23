@@ -1,0 +1,39 @@
+title: Flirt or friendly? Naive Bayes from scratch
+description: A Multinomial Naive Bayes text classifier written from scratch in NumPy, and what text cleaning does to its results.
+nav: projects
+---
+<h1>Flirt or friendly? Naive Bayes from scratch</h1>
+<p class="meta">Feb 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
+<p class="lead">Can a simple statistical model tell a flirty message from a friendly one? I wrote a Multinomial Naive Bayes classifier from scratch to find out, and learned that how you prepare the text matters as much as the model.</p>
+
+<h2>The model</h2>
+<p>Naive Bayes is one of the oldest ideas in machine learning. For each class (flirty or friendly) it counts how often every word appears in the training messages. To classify a new message it asks: given these words, which class makes them most likely? It is "naive" because it treats every word as independent of the others, which is wrong, but works surprisingly well.</p>
+<p>I wrote the training and prediction myself instead of calling a library:</p>
+<ul>
+<li><strong>Prior:</strong> how common each class is, as a log probability.</li>
+<li><strong>Likelihood:</strong> for each word, (count in class + 1) / (words in class + vocabulary size). The +1 (Laplace smoothing) stops a single unseen word from making a probability zero.</li>
+<li><strong>Prediction:</strong> add the log prior and the log likelihoods of the message's words, and pick the larger total. Working in logs avoids multiplying thousands of tiny numbers until they round to zero.</li>
+</ul>
+
+<h2>The data</h2>
+<p>About 5,000 short chat messages labelled flirty (1) or friendly (0). After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. I balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% for testing.</p>
+
+<h2>Cleaning the text: where most of the work went</h2>
+<p>Chat messages are messy, and a word-counting model only sees what you give it. Each step below changes which "words" exist:</p>
+<ol>
+<li>Lower-case everything, and expand contractions ("don't" &rarr; "do not").</li>
+<li>Remove punctuation.</li>
+<li><strong>Keep negation:</strong> join "not" or "never" to the next word ("not cute" &rarr; <code>NOT_cute</code>), so it does not count as "cute".</li>
+<li>Remove common stopwords ("the", "is").</li>
+<li><strong>Flag elongation:</strong> "heyyyy" becomes "hey" plus a <code>_elongated</code> token, because stretching words is a tone signal in itself.</li>
+<li><strong>Translate slang</strong> with a small dictionary ("wyd" &rarr; "what are you doing") and add a <code>_slang</code> token.</li>
+<li>Lemmatise verbs ("texting" &rarr; "text") so different forms count as one word.</li>
+</ol>
+<p><span class="todo">Add your results here: test accuracy, precision and recall, and what changed when you added each cleaning step (even a small table helps).</span></p>
+
+<h2>What I learned</h2>
+<ul>
+<li>How a statistical model becomes a machine learning model: it is all counting and Bayes' rule, with smoothing and logs to make it work in practice.</li>
+<li>Data preparation shapes the output. Choices like keeping negation or flagging stretched words decide what the model can notice.</li>
+<li>Its limit: Naive Bayes sees a bag of words with no order or meaning. Modern language models use word embeddings, which place words with similar meanings close together. I looked into them but did not have time to implement them within the course.</li>
+</ul>

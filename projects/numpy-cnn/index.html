@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural networks from NumPy: from an MLP to a CNN · Noppawit Tharakittikirati</title>
+<meta name="description" content="Building an MLP and then a convolutional network from scratch in NumPy, working out backpropagation by hand.">
+<meta property="og:title" content="Neural networks from NumPy: from an MLP to a CNN · Noppawit Tharakittikirati">
+<meta property="og:description" content="Building an MLP and then a convolutional network from scratch in NumPy, working out backpropagation by hand.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">Home</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+</div></header>
+<main><div class="wrap">
+<h1>Neural networks from NumPy: from an MLP to a CNN</h1>
+<p class="meta">Sep 2026 &middot; Self-study &middot; Python, NumPy</p>
+<p class="lead">I use PyTorch every day, so I wanted to know what it actually does when it trains a network. I built one from plain NumPy: first a small fully connected network (an MLP), then a convolutional network (a CNN), working out each gradient myself.</p>
+
+<h2>Step 1: an MLP on two rings</h2>
+<p>The first test was a toy problem a straight line cannot solve: points on an inner ring and an outer ring. The network had to bend its decision boundary into a circle.</p>
+<p>Writing backpropagation by hand is where the learning happened. Every layer receives the error from the layer above and has to work out three things with the chain rule:</p>
+<ul>
+<li>the weight gradient: inputs<sup>T</sup> &times; incoming error;</li>
+<li>the bias gradient: the incoming error, summed over the batch;</li>
+<li>the error to pass down: incoming error &times; weights<sup>T</sup>.</li>
+</ul>
+<p>My first version did not learn at all. The bugs were instructive: I had computed the weight gradient from the wrong error, trained for only one step, used a hidden layer too small to draw a circle, and started with weights so large that the ReLU units died. Fixing each one taught me why it mattered.</p>
+
+<h2>Step 2: convolution and pooling</h2>
+<p>A CNN slides a small grid of weights (a kernel) over the image, so the same pattern detector is used everywhere. I wrote a modular set of layers with a shared forward and backward interface, the way PyTorch is organised:</p>
+<ul>
+<li><strong>Conv:</strong> the kernel weights are what the network learns. The backward pass slides over the output error to build the kernel's gradient and spread the error back onto the input pixels.</li>
+<li><strong>MaxPool:</strong> keeps the largest value in each 2&times;2 patch; the error flows back only to the pixel that won.</li>
+<li><strong>ReLU, Flatten, Dense, Softmax</strong> and a <code>Sequential</code> container to chain them.</li>
+</ul>
+<p>The first test is deliberately tiny: tell 6&times;6 images of horizontal lines from vertical ones, which a single 3&times;3 kernel should manage.</p>
+<p><span class="todo">Add your result here once it trains reliably (accuracy on the line test), then the next dataset (the cats vs dogs set you prepared).</span></p>
+
+<h2>How I learned it</h2>
+<p>I read the theory first, then used Gemini as a tutor: asking for the maths of backpropagation, what the backward pass does in a conv layer, and whether the kernel is fixed or learned. It also reviewed my code, found the bugs above, and drafted parts of the pooling layer and the demo, which I then worked through line by line. Next I want to add residual connections and build a small ResNet.</p>
+
+<h2>What I learned</h2>
+<ul>
+<li>Backpropagation is one rule, the chain rule, applied layer by layer; every layer only needs its own local derivative.</li>
+<li>Most "it doesn't learn" problems are shapes, scales and signs: initialisation, learning rate, and which gradient goes where.</li>
+<li>Why frameworks exist: a pure Python loop over every pixel is very slow. That is the same lesson as my <a href="/posts/fused-cuda-kernel/">CUDA kernel work</a>, from the other end.</li>
+</ul>
+</div></main>
+<footer><div class="wrap">
+<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
+<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
+<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
+<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+</div></footer>
+</body>
+</html>
