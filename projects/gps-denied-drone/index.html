@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autonomous indoor drone without GPS · Noppawit Tharakittikirati</title>
+<meta name="description" content="ROS 2 offboard control for a PX4 drone flying waypoint missions indoors on optical flow.">
+<meta property="og:title" content="Autonomous indoor drone without GPS · Noppawit Tharakittikirati">
+<meta property="og:description" content="ROS 2 offboard control for a PX4 drone flying waypoint missions indoors on optical flow.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">Home</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+</div></header>
+<main><div class="wrap">
+<h1>Autonomous indoor drone without GPS</h1>
+<p class="meta">2025 &middot; C++, ROS 2 Humble, PX4 Autopilot, MAVROS, Gazebo, Raspberry Pi</p>
+<p class="lead">Indoors there is no GPS, so a drone has to know where it is from its own sensors. This drone flew autonomous missions using optical flow for position.</p>
+<p><span class="todo">Add a photo or a short flight video here.</span></p>
+<h2>What I built</h2>
+<ul>
+<li>A ROS 2 offboard control node that arms the drone, switches PX4 into offboard mode and runs the mission.</li>
+<li>A trajectory generator that reads waypoints from a CSV file and streams <code>TrajectorySetpoint</code> messages to the PX4 flight controller over the micro-ROS XRCE-DDS bridge.</li>
+<li>Testing in Gazebo simulation first, then on the real drone with a Raspberry Pi companion computer.</li>
+</ul>
+<p><span class="todo">Add how accurately it followed the waypoints, and the hardest bug.</span></p>
+</div></main>
+<footer><div class="wrap">
+<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
+<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
+<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
+<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,14 @@
+title: Sensor fusion and drive-by-wire for an autonomous raft
+description: EKF fusion of GPS and IMU, and dual PID heading hold for an unmanned surface vehicle.
+nav: projects
+---
+<h1>Sensor fusion and drive-by-wire for an autonomous raft</h1>
+<p class="meta">2025 &middot; C++, Python, ROS 2, EKF, MAVROS, Arduino, UART, PID</p>
+<p class="lead">On water, currents push a boat sideways all the time. This project gave a small unmanned raft a reliable sense of where it was and which way it pointed, and used that to hold its course.</p>
+<p><span class="todo">Add a photo of the raft here.</span></p>
+<h2>What I built</h2>
+<ul>
+<li><strong>State estimation.</strong> An Extended Kalman Filter, run through MAVROS, fuses GPS position with a 9-axis IMU's orientation.</li>
+<li><strong>Heading-assisted control.</strong> Two PID loops regulate forward speed and yaw separately, so when the operator steers, the raft corrects for currents automatically.</li>
+<li><strong>Drive-by-wire.</strong> An Arduino drives the motors from commands sent over serial.</li>
+</ul>

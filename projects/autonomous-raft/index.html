@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensor fusion and drive-by-wire for an autonomous raft · Noppawit Tharakittikirati</title>
+<meta name="description" content="EKF fusion of GPS and IMU, and dual PID heading hold for an unmanned surface vehicle.">
+<meta property="og:title" content="Sensor fusion and drive-by-wire for an autonomous raft · Noppawit Tharakittikirati">
+<meta property="og:description" content="EKF fusion of GPS and IMU, and dual PID heading hold for an unmanned surface vehicle.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">Home</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+</div></header>
+<main><div class="wrap">
+<h1>Sensor fusion and drive-by-wire for an autonomous raft</h1>
+<p class="meta">2025 &middot; C++, Python, ROS 2, EKF, MAVROS, Arduino, UART, PID</p>
+<p class="lead">On water, currents push a boat sideways all the time. This project gave a small unmanned raft a reliable sense of where it was and which way it pointed, and used that to hold its course.</p>
+<p><span class="todo">Add a photo of the raft here.</span></p>
+<h2>What I built</h2>
+<ul>
+<li><strong>State estimation.</strong> An Extended Kalman Filter, run through MAVROS, fuses GPS position with a 9-axis IMU's orientation.</li>
+<li><strong>Heading-assisted control.</strong> Two PID loops regulate forward speed and yaw separately, so when the operator steers, the raft corrects for currents automatically.</li>
+<li><strong>Drive-by-wire.</strong> An Arduino drives the motors from commands sent over serial.</li>
+</ul>
+</div></main>
+<footer><div class="wrap">
+<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
+<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
+<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
+<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+</div></footer>
+</body>
+</html>

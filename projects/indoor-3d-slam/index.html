@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indoor 3D SLAM with an RGB camera and 2D LiDAR · Noppawit Tharakittikirati</title>
+<meta name="description" content="A low-cost alternative to 3D LiDAR for indoor drone mapping, tested against a UWB testbed at Temasek Laboratories, NUS.">
+<meta property="og:title" content="Indoor 3D SLAM with an RGB camera and 2D LiDAR · Noppawit Tharakittikirati">
+<meta property="og:description" content="A low-cost alternative to 3D LiDAR for indoor drone mapping, tested against a UWB testbed at Temasek Laboratories, NUS.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">Home</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+</div></header>
+<main><div class="wrap">
+<h1>Indoor 3D SLAM with an RGB camera and 2D LiDAR</h1>
+<p class="meta">2025 &ndash; 2026 &middot; Python, ROS 2 Jazzy, RTAB-Map, MAVROS, OpenCV, MiDaS, EKF, Raspberry Pi, UWB</p>
+<p class="lead">3D LiDARs make indoor mapping easy, but they are expensive and heavy for a small drone. This project built a 3D map from a cheap 2D laser scanner and an ordinary camera instead.</p>
+<p><span class="todo">Add a photo of the drone or a screenshot of a map here.</span></p>
+<h2>How it works</h2>
+<ul>
+<li><strong>Pseudo-depth.</strong> MiDaS estimates depth from a single RGB image, but only up to an unknown scale. The 2D laser scan gives true distances along one plane. Projecting the scan onto the image anchors the MiDaS depth to real metres, so the camera behaves like an RGB-D sensor.</li>
+<li><strong>Mapping.</strong> RTAB-Map builds the 3D map from the pseudo-RGB-D stream.</li>
+<li><strong>Position without GPS.</strong> Visual-inertial odometry combines optical flow and the IMU through MAVROS, fused with an EKF.</li>
+</ul>
+<h2>Testing</h2>
+<p>The drone was flown in the Ultra-Wideband (UWB) testbed at Temasek Laboratories, National University of Singapore, which gives a ground-truth position to compare the estimate against.</p>
+<p><span class="todo">Add the localisation error you measured against UWB, and what you would do differently.</span></p>
+</div></main>
+<footer><div class="wrap">
+<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
+<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
+<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
+<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+</div></footer>
+</body>
+</html>
