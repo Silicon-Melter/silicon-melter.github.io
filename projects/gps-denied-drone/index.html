@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Autonomous indoor drone without GPS · Noppawit Tharakittikirati</title>
-<meta name="description" content="ROS 2 offboard control for a PX4 drone flying waypoint missions indoors on optical flow.">
+<meta name="description" content="An indoor drone that maps a room in 3D and knows where it is without GPS, from a depth camera, a 2D LiDAR and its IMU, using ROS 2, PX4 and RTAB-Map.">
 <meta property="og:title" content="Autonomous indoor drone without GPS · Noppawit Tharakittikirati">
-<meta property="og:description" content="ROS 2 offboard control for a PX4 drone flying waypoint missions indoors on optical flow.">
+<meta property="og:description" content="An indoor drone that maps a room in 3D and knows where it is without GPS, from a depth camera, a 2D LiDAR and its IMU, using ROS 2, PX4 and RTAB-Map.">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -16,16 +16,154 @@
 </div></header>
 <main><div class="wrap">
 <h1>Autonomous indoor drone without GPS</h1>
-<p class="meta">2025 &middot; C++, ROS 2 Humble, PX4 Autopilot, MAVROS, Gazebo, Raspberry Pi</p>
-<p class="lead">Indoors there is no GPS, so a drone has to know where it is from its own sensors. This drone flew autonomous missions using optical flow for position.</p>
-<p><span class="todo">Add a photo or a short flight video here.</span></p>
-<h2>What I built</h2>
+<p class="meta">2025 &ndash; 2026 &middot; Python, C++, ROS 2 (Humble, Jazzy), PX4 Autopilot, MAVROS, RTAB-Map, robot_localization, Gazebo, Raspberry Pi 5, Intel RealSense, RPLidar</p>
+<p class="lead">Outdoors, a drone knows where it is from GPS. Indoors there is no GPS signal, so it has to work out its position from its own sensors. Over two stages I built the software for an indoor drone that flies a route by itself, then builds a 3D map of the room and finds its own position inside that map.</p>
+<figure>
+<img src="/assets/img/drone-in-flight.jpg" alt="The quadcopter hovering indoors under a building, next to a pillar, with the depth camera and LiDAR mounted on top" width="720" height="600" style="width:100%;max-width:520px;height:auto;border-radius:8px;display:block">
+<figcaption>The drone during a mapping flight under a building. I flew it by hand while it recorded its sensors.</figcaption>
+</figure>
+
+<h2>The problem</h2>
+<p>A flight controller such as PX4 can hold a drone steady on its own, but to fly anywhere useful it needs to know its position. Every indoor sensor has a weak spot. A camera loses track on blank walls or in poor light. A 2D LiDAR measures distances very precisely, but only in one flat slice of the room, so it gets confused when the drone climbs or tilts. The motion sensors (the IMU) react instantly but drift within seconds if used alone. The work in this project is mostly about combining them so that each one covers the others' weak spots.</p>
+
+<h2>Stage 1: flying a route in offboard mode</h2>
+<figure>
+<svg viewBox="0 0 400 470" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-label="Diagram: waypoints in a CSV file go to a trajectory generator and an offboard control node on the Raspberry Pi, which send setpoints over the micro-ROS XRCE-DDS bridge to PX4. PX4 estimates position from optical flow and the IMU and sends it back.">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<g style="fill:none;stroke:var(--line);stroke-width:1.5">
+<rect x="10" y="10" width="380" height="200" rx="10" style="stroke-dasharray:5 4"/>
+<rect x="10" y="260" width="380" height="200" rx="10" style="stroke-dasharray:5 4"/>
+</g>
+<text x="24" y="32" class="muted">Companion computer &middot; Raspberry Pi &middot; ROS 2 Humble</text>
+<text x="24" y="282" class="muted">Flight controller &middot; PX4</text>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="30" y="48" width="150" height="48" rx="6"/>
+<rect x="220" y="48" width="150" height="48" rx="6"/>
+<rect x="125" y="140" width="150" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="125" y="300" width="150" height="48" rx="6"/>
+<rect x="30" y="392" width="150" height="48" rx="6"/>
+<rect x="220" y="392" width="150" height="48" rx="6"/>
+</g>
+<text x="105" y="69" text-anchor="middle">Waypoints</text><text x="105" y="86" text-anchor="middle" class="muted">CSV file</text>
+<text x="295" y="69" text-anchor="middle">Trajectory</text><text x="295" y="86" text-anchor="middle">generator</text>
+<text x="200" y="161" text-anchor="middle">Offboard control</text><text x="200" y="178" text-anchor="middle">node (C++)</text>
+<text x="200" y="321" text-anchor="middle">Position and</text><text x="200" y="338" text-anchor="middle">attitude control</text>
+<text x="105" y="413" text-anchor="middle">State estimator</text><text x="105" y="430" text-anchor="middle" class="muted">EKF2</text>
+<text x="295" y="413" text-anchor="middle">Optical flow</text><text x="295" y="430" text-anchor="middle">+ IMU</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)">
+<path d="M180,72H216"/>
+<path d="M295,96V118H240V136"/>
+<path d="M180,188V296"/>
+<path d="M220,296V188"/>
+<path d="M105,392V370H200V352"/>
+<path d="M220,416H184"/>
+</g>
+<text x="174" y="224" text-anchor="end" style="font-size:12px">setpoints,</text>
+<text x="174" y="237" text-anchor="end" style="font-size:12px">arm / mode</text>
+<text x="226" y="224" style="font-size:12px">position,</text>
+<text x="226" y="237" style="font-size:12px">status</text>
+<rect x="112" y="240" width="176" height="17" rx="3" style="fill:var(--bg)"/>
+<text x="200" y="253" text-anchor="middle" class="muted" style="font-size:11px">micro-ROS XRCE-DDS bridge</text>
+<text x="200" y="110" text-anchor="middle" class="muted" style="font-size:11px">TrajectorySetpoint</text>
+</svg>
+<figcaption>The Raspberry Pi decides where to go; PX4 keeps the drone in the air and estimates where it is.</figcaption>
+</figure>
 <ul>
-<li>A ROS 2 offboard control node that arms the drone, switches PX4 into offboard mode and runs the mission.</li>
-<li>A trajectory generator that reads waypoints from a CSV file and streams <code>TrajectorySetpoint</code> messages to the PX4 flight controller over the micro-ROS XRCE-DDS bridge.</li>
-<li>Testing in Gazebo simulation first, then on the real drone with a Raspberry Pi companion computer.</li>
+<li><strong>Waypoints from a file.</strong> The mission is a CSV file of positions in metres. A trajectory generator turns each row into a <code>TrajectorySetpoint</code> message, the standard target message in PX4.</li>
+<li><strong>Offboard control node.</strong> A ROS 2 node in C++ arms the drone, switches PX4 into <strong>offboard mode</strong> (where targets come from an on-board computer instead of a pilot) and keeps streaming setpoints. PX4 leaves offboard mode if the stream stops, so the node publishes continuously.</li>
+<li><strong>A direct bridge to PX4.</strong> The micro-ROS XRCE-DDS bridge makes PX4's internal topics appear as ordinary ROS 2 topics.</li>
+<li><strong>Position from optical flow.</strong> A small downward camera measures how fast the floor slides past, much like an optical mouse, and PX4's estimator turns that into position.</li>
 </ul>
-<p><span class="todo">Add how accurately it followed the waypoints, and the hardest bug.</span></p>
+
+<h2>Stage 2: a 3D map, and position inside it</h2>
+<p>Optical flow drifts over time, so for the second stage I gave the drone a depth camera and a 2D LiDAR and used <strong>SLAM</strong> (simultaneous localisation and mapping): the drone builds a map of the room and, at the same time, uses that map to correct its own position. When it recognises a place it has seen before (a <em>loop closure</em>), the accumulated drift is removed from the whole map.</p>
+<figure>
+<svg viewBox="0 0 420 560" width="100%" style="max-width:460px;display:block;margin:0 auto" role="img" aria-label="Diagram: an RGB-D camera, a 2D LiDAR and the flight controller's IMU feed visual odometry, LiDAR scan matching with an outlier gate, and an EKF. The fused motion estimate and the camera images go to RTAB-Map, which builds a 3D map and later localises the drone in it.">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="10" y="30" width="120" height="48" rx="6"/>
+<rect x="150" y="30" width="120" height="48" rx="6"/>
+<rect x="290" y="30" width="120" height="48" rx="6"/>
+<rect x="10" y="120" width="120" height="48" rx="6"/>
+<rect x="150" y="120" width="120" height="48" rx="6"/>
+<rect x="150" y="210" width="120" height="48" rx="6" style="stroke-dasharray:4 3"/>
+<rect x="110" y="300" width="200" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="110" y="390" width="200" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="10" y="490" width="170" height="48" rx="6"/>
+<rect x="240" y="490" width="170" height="48" rx="6"/>
+</g>
+<text x="10" y="18" class="muted" style="font-size:12px">Sensors</text>
+<text x="70" y="51" text-anchor="middle">RGB-D camera</text><text x="70" y="68" text-anchor="middle" class="muted">RealSense</text>
+<text x="210" y="51" text-anchor="middle">2D LiDAR</text><text x="210" y="68" text-anchor="middle" class="muted">RPLidar A1</text>
+<text x="350" y="51" text-anchor="middle">IMU</text><text x="350" y="68" text-anchor="middle" class="muted">PX4 via MAVROS</text>
+<text x="70" y="141" text-anchor="middle">Visual</text><text x="70" y="158" text-anchor="middle">odometry</text>
+<text x="210" y="141" text-anchor="middle">LiDAR scan</text><text x="210" y="158" text-anchor="middle">matching (ICP)</text>
+<text x="210" y="231" text-anchor="middle">Outlier gate</text><text x="210" y="248" text-anchor="middle" class="muted" style="font-size:12px">no climbs, no jumps</text>
+<text x="210" y="321" text-anchor="middle">Sensor fusion (EKF)</text><text x="210" y="338" text-anchor="middle" class="muted">robot_localization</text>
+<text x="210" y="411" text-anchor="middle">RTAB-Map SLAM</text><text x="210" y="428" text-anchor="middle" class="muted">loop closure, 3D map</text>
+<text x="95" y="511" text-anchor="middle">Saved 3D map</text><text x="95" y="528" text-anchor="middle" class="muted">one .db file</text>
+<text x="325" y="511" text-anchor="middle">Localisation</text><text x="325" y="528" text-anchor="middle" class="muted">in the saved map</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)">
+<path d="M70,78V116"/>
+<path d="M210,78V116"/>
+<path d="M210,168V206"/>
+<path d="M70,168V324H106"/>
+<path d="M210,258V296"/>
+<path d="M350,78V324H314"/>
+<path d="M210,348V386"/>
+<path d="M170,438V462H95V486"/>
+<path d="M250,438V462H325V486"/>
+</g>
+<path d="M10,62H3V414H106" style="fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3" marker-end="url(#ar2)"/>
+<text x="12" y="380" class="muted" style="font-size:11px">images</text><text x="12" y="394" class="muted" style="font-size:11px">+ depth</text>
+<text x="78" y="230" class="muted" style="font-size:11px">height</text>
+<text x="218" y="285" class="muted" style="font-size:11px">heading, speed</text>
+<text x="342" y="230" text-anchor="end" class="muted" style="font-size:11px">turn rate</text>
+</svg>
+<figcaption>Each sensor contributes what it is good at. The fused motion estimate tells RTAB-Map how the drone moved between frames; RTAB-Map builds the 3D map from the camera images.</figcaption>
+</figure>
+<ul>
+<li><strong>Two ways to measure motion.</strong> Visual odometry tracks features between RGB-D camera frames. LiDAR odometry matches each laser scan to the previous one (ICP scan matching). Both come from RTAB-Map's odometry nodes.</li>
+<li><strong>Fusing them.</strong> An extended Kalman filter (EKF, from the <code>robot_localization</code> package) combines the sources, each for what it measures best: the LiDAR for heading and horizontal speed, the camera for height, and the IMU for fast turns.</li>
+<li><strong>Not trusting the LiDAR blindly.</strong> I wrote a small gating node that drops a LiDAR reading when the drone is climbing faster than 0.2&nbsp;m/s, because the flat scan then sweeps different parts of the walls, or when the LiDAR's position disagrees with the filter by more than 4 standard deviations (a Mahalanobis distance test), which usually means the scan matching has slipped.</li>
+<li><strong>Feeding PX4.</strong> The visual odometry is also sent to PX4 through MAVROS as an external position source, with a 2&nbsp;Hz heartbeat that tells PX4 whether the estimate is still fresh, so the flight controller can stop trusting it if the camera drops out. On the Raspberry Pi 5 the visual odometry ran at about 13&nbsp;Hz. I checked that PX4 really used it with <code>ekf2 status</code>: with no GPS at all, it reported a valid local position.</li>
+<li><strong>Fixing the flight controller's position.</strong> PX4's own estimate, from optical flow, had good height and orientation but badly underestimated horizontal movement. A small node takes PX4's estimate, replaces only its horizontal position and velocity with the visual odometry's, and republishes it for mapping.</li>
+<li><strong>Map once, then localise.</strong> A script replays a recorded flight through RTAB-Map and saves the map as one database file. On later flights RTAB-Map loads that map read-only and only localises the drone in it.</li>
+<li><strong>Testing.</strong> I compared six combinations of odometry sources (camera only, LiDAR only, and several fused versions), tried the mapping with the sensors carried by hand before mounting them on the drone, and ran the same localisation launch files in Gazebo with PX4's simulator before the real drone.</li>
+</ul>
+<p>The drone was flown in the Ultra-Wideband (UWB) testbed at Temasek Laboratories, National University of Singapore. UWB radio beacons around the room give a ground-truth position to compare the drone's own estimate against.</p>
+
+<h2>How the code is organised</h2>
+<p>The software is split into three ROS 2 packages, each in its own repository: <code>drone_bringup</code> starts the hardware (camera, LiDAR, MAVROS) and sends odometry to PX4, <code>drone_rtabmap</code> holds the mapping and fusion experiments, and <code>drone_navigation</code> runs localisation in a saved map. Keeping them separate meant I could rework one package, for example try a new fusion setup, without risking the packages that already worked on the drone, and add or drop a package without restructuring the rest.</p>
+
+<h2>Results</h2>
+<p>Before flying, I tested the mapping by carrying the sensors by hand along a building corridor. The finished map below is one continuous 3D point cloud of the corridors and the junction where they meet. The cyan dots are the positions RTAB-Map saved along the way.</p>
+<figure>
+<img src="/assets/img/drone-corridor-map.jpg" alt="3D point cloud map of two long building corridors meeting at a junction, built by RTAB-Map" width="1620" height="540" style="width:100%;height:auto;border-radius:8px">
+<figcaption>3D map of a building corridor, from the hand-carried test.</figcaption>
+</figure>
+<figure>
+<img src="/assets/img/drone-corridor-features.jpg" alt="Camera frame of the corridor with tracked feature points in red and their motion in yellow" width="742" height="418" style="width:100%;max-width:560px;height:auto;border-radius:8px;display:block">
+<figcaption>Visual odometry at work: red dots are the features it tracks from frame to frame, and yellow lines show how they moved.</figcaption>
+</figure>
+<figure>
+<img src="/assets/img/drone-loop-closure.jpg" alt="Two camera frames of the same area under the building, the current view on the left and a matching earlier view on the right" width="1572" height="436" style="width:100%;height:auto;border-radius:8px">
+<figcaption>A loop closure during the flight: the current view (left) matches a place seen earlier (right), so RTAB-Map can remove the drift collected in between.</figcaption>
+</figure>
+<p>Then I flew the drone by hand under a building, and RTAB-Map mapped the area around the pillars from its sensors. The cyan line is the path it flew.</p>
+<figure>
+<img src="/assets/img/drone-flight-map.jpg" alt="3D point cloud of the area under a building, with pillars and the drone's flight path in cyan" width="800" height="631" style="width:100%;max-width:560px;height:auto;border-radius:8px;display:block">
+<figcaption>Map from a hand-piloted flight under a building, with the flight path in cyan.</figcaption>
+</figure>
+
+<h2>What I learned</h2>
+<ul>
+<li><strong>Fusing more sensors first made things worse.</strong> Each sensor worked well on its own, but the fused estimate wobbled and jumped. The odometry nodes reported almost no uncertainty (a covariance of about 0.001), so when two of them disagreed even slightly, the filter decided one was wrong and threw its data away. What worked was letting each sensor feed only the quantities it measures well, and keeping it out of the rest.</li>
+<li><strong>A position can be wrong in only some directions.</strong> When the drone had clearly travelled a long way, PX4's optical-flow estimate said it had moved only about 0.1&nbsp;m sideways, while its height and orientation stayed accurate. Instead of discarding it, I kept the parts that were right and replaced the part that was wrong, which became the small node described above.</li>
+<li><strong>Recording data can break the flight.</strong> Recording every topic on the Raspberry Pi slowed the visual odometry sent to PX4 from about 10&nbsp;Hz to 0&ndash;2&nbsp;Hz, because the SD card could not write that much video fast enough. I switched to recording only the topics the map needs, with compressed images, and building the map on a laptop after the flight.</li>
+<li><strong>Smooth and correct are different jobs.</strong> PX4 needs a position that changes smoothly to fly steadily. Localising in the saved map is more accurate, but it jumps whenever RTAB-Map recognises a place. So the two stay separate: visual odometry goes to the flight controller, and map localisation corrects the drone's position in the map.</li>
+<li><strong>What I would do differently.</strong> My fusion is <em>loosely coupled</em>: each sensor computes its own motion first, and the filter combines the answers. A <em>tightly coupled</em> visual-inertial method such as OpenVINS or VINS-Fusion combines raw camera features with the IMU in one estimator. That should handle fast motion and blank walls better, and it is what I would try next.</li>
+</ul>
 </div></main>
 <footer><div class="wrap">
 <a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
