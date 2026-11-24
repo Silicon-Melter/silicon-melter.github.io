@@ -29,11 +29,20 @@ nav: projects
 <li><strong>Translate slang</strong> with a small dictionary ("wyd" &rarr; "what are you doing") and add a <code>_slang</code> token.</li>
 <li>Lemmatise verbs ("texting" &rarr; "text") so different forms count as one word.</li>
 </ol>
-<p><span class="todo">Add your results here: test accuracy, precision and recall, and what changed when you added each cleaning step (even a small table helps).</span></p>
+<h2>Results, and a surprise</h2>
+<p>I tested each version of the cleaning on the same 422 held-out messages, and again over 10 different random splits so one lucky split could not mislead me.</p>
+<table>
+<tr><th>Cleaning</th><th class="n">Accuracy</th><th class="n">Accuracy, 10 splits</th><th class="n">F1, 10 splits</th></tr>
+<tr><td>Lower case only</td><td class="n">74.6%</td><td class="n">74.4 &plusmn; 1.8%</td><td class="n">0.746</td></tr>
+<tr><td>Full first version (removes stopwords)</td><td class="n">73.2%</td><td class="n">71.3 &plusmn; 1.4%</td><td class="n">0.721</td></tr>
+<tr><td><strong>Final: keep stopwords, flag emoticons</strong></td><td class="n"><strong>77.3%</strong></td><td class="n"><strong>75.1 &plusmn; 1.7%</strong></td><td class="n"><strong>0.750</strong></td></tr>
+</table>
+<p>My carefully built first pipeline did <em>worse</em> than just lower-casing the text. The culprit was stopword removal, a standard step that deletes small words like "you", "your" and "me". In chat those words carry the tone: "your", "me", "over" and "down" lean flirty, while "he" and "they" lean friendly. Keeping them, and turning emoticons into tokens before punctuation removal deleted them, gave the best model. <code>;)</code> appears in 41 messages, and every one is labelled flirty.</p>
+<p>The other steps (contractions, negation, stretched words, slang, lemmatising) each moved accuracy by less than the variation between splits. With about 2,100 messages, differences under two points are noise, which is the other lesson: measure over several splits before believing a change helped.</p>
 
 <h2>What I learned</h2>
 <ul>
 <li>How a statistical model becomes a machine learning model: it is all counting and Bayes' rule, with smoothing and logs to make it work in practice.</li>
-<li>Data preparation shapes the output. Choices like keeping negation or flagging stretched words decide what the model can notice.</li>
+<li>Data preparation shapes the output, and "standard" steps are not always right. Stopword lists were built for documents, not chat messages.</li>
 <li>Its limit: Naive Bayes sees a bag of words with no order or meaning. Modern language models use word embeddings, which place words with similar meanings close together. I looked into them but did not have time to implement them within the course.</li>
 </ul>

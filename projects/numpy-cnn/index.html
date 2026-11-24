@@ -37,10 +37,16 @@
 <li><strong>ReLU, Flatten, Dense, Softmax</strong> and a <code>Sequential</code> container to chain them.</li>
 </ul>
 <p>The first test is deliberately tiny: tell 6&times;6 images of horizontal lines from vertical ones, which a single 3&times;3 kernel should manage.</p>
-<p><span class="todo">Add your result here once it trains reliably (accuracy on the line test), then the next dataset (the cats vs dogs set you prepared).</span></p>
+<p>It did not learn at first: every image got the same answer, a coin flip. Two fixes made it work. The softmax layer's backward pass was paired with a squared-error loss; switching to cross-entropy, whose gradient through softmax is simply prediction minus label, fixed the learning signal. And a small positive starting bias on the conv layer stopped the ReLU after it from starting "dead" (outputting zeros, so no gradient flows back).</p>
+<table>
+<tr><th>Model and task</th><th class="n">Test accuracy</th></tr>
+<tr><td>MLP, inner vs outer ring</td><td class="n">100%</td></tr>
+<tr><td>CNN with one 3&times;3 kernel, horizontal vs vertical lines</td><td class="n">88.5% (mean of 10 runs, 79&ndash;100%)</td></tr>
+</table>
+<p>The spread between runs shows the limit of a single kernel: depending on where it starts, it sometimes learns a detector that only works for some line positions. Several filters per layer is the next step, then the Cats vs Dogs images I have already cleaned and balanced (11,670 of each).</p>
 
 <h2>How I learned it</h2>
-<p>I read the theory first, then used Gemini as a tutor: asking for the maths of backpropagation, what the backward pass does in a conv layer, and whether the kernel is fixed or learned. It also reviewed my code, found the bugs above, and drafted parts of the pooling layer and the demo, which I then worked through line by line. Next I want to add residual connections and build a small ResNet.</p>
+<p>I read the theory first, then used Gemini as a tutor: asking for the maths of backpropagation, what the backward pass does in a conv layer, and whether the kernel is fixed or learned. It also reviewed my code, found the bugs above, and drafted parts of the pooling layer and the demo, which I then worked through line by line. The two CNN fixes above came from a later code review with Claude. Next I want to add residual connections and build a small ResNet.</p>
 
 <h2>What I learned</h2>
 <ul>
