@@ -1,12 +1,168 @@
-title: Reinforcement-learning forest drone
-description: A PPO navigation agent trained in AirSim, with 3D Gaussian Splatting for realistic obstacles.
+title: EGA drone: teaching a drone to fly through a forest
+description: A high-school team project: a drone that learns to fly between trees by reinforcement learning in AirSim, and a Gaussian Splatting pipeline to bring real forests into the simulator.
 nav: projects
 ---
-<h1>Reinforcement-learning forest drone</h1>
-<p class="meta">2023 &middot; Python, Stable Baselines3 (PPO), AirSim, 3D Gaussian Splatting</p>
-<p class="lead">A drone that learned to fly from point to point through a forest by trial and error in simulation.</p>
-<p><span class="todo">Add a screenshot of the simulated forest here.</span></p>
+<h1>EGA drone: teaching a drone to fly through a forest</h1>
+<p class="meta">May 2023 &ndash; Apr 2024 &middot; High-school team project, Prince Royal's College, Chiang Mai &middot; Gold, Thailand Young Scientist Festival 2023 &middot; Python, Stable Baselines3 (PPO), AirSim, Unreal Engine, COLMAP, 3D Gaussian Splatting</p>
+<p class="lead">Every dry season, forest fires fill Chiang Mai with smoke. Fire crews watch huge areas on foot, and camera drones usually fly above the trees, where they can't see what is happening under the canopy. Our team of three wanted a drone that could fly itself between the trees. We called it EGA, short for EcoGuardianAI.</p>
+
+<figure>
+<img src="/assets/rl-forest-drone/airsim-forest-depth.jpg" alt="A simulated pine forest in AirSim, with purple guide lines from the drone and two inset camera views" width="100%">
+<figcaption>The training forest in AirSim. The purple lines are debug arrows we drew to compare where the drone was heading with where the goal was. The small grey picture on the left is the depth image the agent actually sees.</figcaption>
+</figure>
+
+<p>My part of the project was designing the reward and the learning setup, including randomising the training conditions, and building the Gaussian Splatting pipeline, which turns photos of a real forest into a 3D scene.</p>
+
+<h2>Learning without a teacher</h2>
+<p>Most machine learning copies examples: you show the network the right answer and it learns to give it. Nobody can show a drone the "right" way through every forest, so we used reinforcement learning (RL) instead. The agent tries something, the simulator tells it how good the result was as a number called the <em>reward</em>, and over many thousands of attempts it learns which actions lead to more reward. The training algorithm was PPO (Proximal Policy Optimization), from the Stable Baselines3 library.</p>
+<p>Crashing real drones thousands of times isn't practical, so all the learning happened in AirSim, a drone simulator built on Unreal Engine, inside a forest we built from tree models.</p>
+
+<figure>
+<svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Training loop: the simulator gives observations to the PPO agent, the agent sends a velocity command, the simulator's flight controller flies it, and a reward goes back to the agent">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<rect x="10" y="20" width="190" height="150" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+<text x="105" y="44" text-anchor="middle" font-weight="600">AirSim forest</text>
+<text x="105" y="66" text-anchor="middle" class="muted">Unreal Engine scene</text>
+<text x="105" y="96" text-anchor="middle">built-in flight</text>
+<text x="105" y="114" text-anchor="middle">controller</text>
+<text x="105" y="132" text-anchor="middle" class="muted">(keeps the drone level,</text>
+<text x="105" y="150" text-anchor="middle" class="muted">spins the motors)</text>
+<rect x="430" y="20" width="200" height="150" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="530" y="44" text-anchor="middle" font-weight="600">PPO agent</text>
+<text x="530" y="70" text-anchor="middle">small CNN reads the</text>
+<text x="530" y="88" text-anchor="middle">depth image, joined with</text>
+<text x="530" y="106" text-anchor="middle">the goal numbers</text>
+<text x="530" y="136" text-anchor="middle" class="muted">learns which action</text>
+<text x="530" y="154" text-anchor="middle" class="muted">earns the most reward</text>
+<line x1="200" y1="55" x2="428" y2="55" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+<text x="315" y="38" text-anchor="middle">observation</text>
+<text x="315" y="74" text-anchor="middle" class="muted">100&times;56 depth image, goal distance,</text>
+<text x="315" y="90" text-anchor="middle" class="muted">goal direction, position, yaw</text>
+<line x1="428" y1="135" x2="202" y2="135" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+<text x="315" y="124" text-anchor="middle">action</text>
+<text x="315" y="154" text-anchor="middle" class="muted">heading, speed, duration</text>
+<path d="M105,170 V215 H530 V172" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<text x="315" y="236" text-anchor="middle">reward: closer to the goal? facing it? crashed? arrived?</text>
+</svg>
+<figcaption>One step of training. The agent never sees the full map: only what a depth camera sees, plus how far away the goal is and in which direction.</figcaption>
+</figure>
+
+<h2>Choosing what the network controls</h2>
+<p>Our first design was the most ambitious: from raw sensor readings straight to motor outputs. The network had to learn two things at once, staying in the air and getting somewhere, and the first is already hard. A quadcopter is unstable, so a tiny mistake in motor speeds flips it over long before it can learn anything about trees.</p>
+<p>So we moved one level up. In the second design the network chooses a velocity: a heading (within 45&deg; either side), a speed (1 to 5 m/s) and how long to hold it (0.125 to 3.75 s), at a fixed height of 4 m. AirSim's own low-level controller turns that into motor commands. The network only has to learn where to go, not how to fly.</p>
+
+<figure>
+<svg viewBox="0 0 640 190" width="100%" role="img" aria-label="Two designs compared. Version 1: sensors to network to four motor speeds. Version 2: sensors to network to a velocity command, then a flight controller to motor speeds.">
+<defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<text x="10" y="22" font-weight="600">First design</text>
+<rect x="10" y="34" width="120" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="70" y="61" text-anchor="middle">raw sensors</text>
+<rect x="190" y="34" width="150" height="44" rx="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/><text x="265" y="61" text-anchor="middle">network</text>
+<rect x="400" y="34" width="230" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="515" y="61" text-anchor="middle">four motor speeds</text>
+<line x1="130" y1="56" x2="188" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+<line x1="340" y1="56" x2="398" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+<text x="10" y="114" font-weight="600">Second design</text>
+<rect x="10" y="126" width="120" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="70" y="153" text-anchor="middle">depth + goal</text>
+<rect x="190" y="126" width="150" height="44" rx="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/><text x="265" y="153" text-anchor="middle">network</text>
+<rect x="400" y="126" width="100" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="450" y="146" text-anchor="middle">flight</text><text x="450" y="162" text-anchor="middle">controller</text>
+<rect x="540" y="126" width="90" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="585" y="153" text-anchor="middle">motors</text>
+<line x1="130" y1="148" x2="188" y2="148" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+<line x1="340" y1="148" x2="398" y2="148" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+<text x="369" y="120" text-anchor="middle" class="muted">velocity</text>
+<line x1="500" y1="148" x2="538" y2="148" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+</svg>
+<figcaption>Moving the network's output from motor speeds to a velocity let a proven controller handle balance, so learning could focus on navigation.</figcaption>
+</figure>
+
+<h2>Designing the reward</h2>
+<p>With no teacher, the reward is the only thing that tells the agent what we want, and it was the hardest part. The agent optimises exactly what you write down, not what you meant. Our final reward had a few parts:</p>
+<table>
+<tr><th>Event</th><th class="n">Reward</th><th>Why</th></tr>
+<tr><td>Reaching the goal (within 3 m)</td><td class="n">+1200</td><td>the real objective, ends the episode</td></tr>
+<tr><td>Hitting a tree</td><td class="n">&minus;200</td><td>ends the episode</td></tr>
+<tr><td>Each metre closer to the goal</td><td class="n">+5</td><td>a signal on every step, not only at the end</td></tr>
+<tr><td>Facing the goal</td><td class="n">up to +10</td><td>see the chart below</td></tr>
+<tr><td>Not moving</td><td class="n">&minus;1</td><td>so hovering in place doesn't pay</td></tr>
+</table>
+<p>The big rewards for arriving and crashing come too rarely to learn from at the start, when the agent is moving almost at random. The small rewards on every step give it a hint long before it first reaches the goal. The heading term rewards pointing at the goal and punishes pointing away, increasingly so the further off it is, with a small bonus for turning towards the goal on that step:</p>
+
+<figure>
+<svg viewBox="0 0 640 280" width="100%" role="img" aria-label="Heading reward against angle to the goal: plus 10 when facing the goal, zero at about 81 degrees, about minus 39 when facing away">
+<line x1="60" y1="30" x2="60" y2="230" stroke="var(--line)"/>
+<line x1="60" y1="70" x2="600" y2="70" stroke="var(--muted)" stroke-dasharray="4 4"/>
+<line x1="60" y1="230" x2="600" y2="230" stroke="var(--line)"/>
+<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="60,30 75,30 90,31 105,31 120,32 135,34 150,35 165,37 180,40 195,42 210,45 225,48 240,52 255,56 270,60 285,64 300,69 315,74 330,79 345,85 360,91 375,97 390,104 405,111 420,118 435,125 450,133 465,141 480,149 495,158 510,167 525,176 540,186 555,196 570,206 585,217 600,227"/>
+<text x="52" y="34" text-anchor="end">+10</text>
+<text x="52" y="74" text-anchor="end">0</text>
+<text x="52" y="230" text-anchor="end">&minus;40</text>
+<text x="60" y="250" text-anchor="middle">0&deg;</text>
+<text x="330" y="250" text-anchor="middle">90&deg;</text>
+<text x="600" y="250" text-anchor="middle">180&deg;</text>
+<text x="330" y="272" text-anchor="middle" class="muted">angle between the drone's heading and the goal</text>
+<circle cx="303" cy="70" r="4" fill="var(--accent)"/>
+<text x="312" y="62">turns negative at about 81&deg;</text>
+</svg>
+<figcaption>Heading reward = 10 &minus; 5&theta;&sup2;, with &theta; in radians. Facing the goal earns +10; facing directly away costs about &minus;39.</figcaption>
+</figure>
+
+<p>Getting these weights right took many rounds. To see what was going on, the code logged every part of the reward on every step to a spreadsheet, and drew arrows in the simulator for the drone's heading and the goal's direction. When the agent did something strange, we could see which term was paying for it.</p>
+
+<h2>Training more drones at once</h2>
+<p>A single drone with a fixed start and goal learns that one route and nothing else. We later trained 8 drones in parallel in the same AirSim world, each starting and aiming somewhere random within a 79 m square, so the agent had to learn to navigate in general rather than memorise a route. This is the first step of domain randomisation: varying the training conditions so the agent can cope with conditions it hasn't seen. The next steps we aimed for were varying the forest itself, the lighting and the sensor noise, so that a policy trained in simulation would survive a real camera.</p>
+
+<figure>
+<img src="/assets/rl-forest-drone/airsim-forest-path.jpg" alt="A drone flying low between pine trees in AirSim, with purple lines showing its path" width="100%">
+<figcaption>A drone between the trees in simulation, with its debug arrows.</figcaption>
+</figure>
+
+<h2>Bringing a real forest into the simulator</h2>
+<p>The trees in our simulator were neat, repeated models. A real dry forest in northern Thailand is messy: thin trunks, undergrowth, low branches. An agent that only ever sees tidy trees can fail on the first real one, a problem known as the sim-to-real gap. So the second half of the project tried to make the simulator look like a real forest.</p>
+<p>3D Gaussian Splatting rebuilds a scene from ordinary photos. It represents the scene as millions of small, soft, coloured blobs and adjusts them until renders of the blobs match the photos. First it needs to know where each photo was taken from, which we worked out with COLMAP, a tool that matches features across overlapping photos to recover the camera positions.</p>
+
+<figure>
+<img src="/assets/rl-forest-drone/real-vs-splat.jpg" alt="Left: a photo of a dry forest. Right: the same view rendered from our Gaussian Splatting reconstruction, slightly blurred and blotchy" width="100%">
+<figcaption>Left: a photo of the forest. Right: the same view rendered from our Gaussian Splatting reconstruction.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 640 170" width="100%" role="img" aria-label="Pipeline: forest photos, COLMAP camera poses, Gaussian Splatting training, splat scene, then mesh conversion into the simulator, which was the hard step. IMU-aided poses were an idea we did not build.">
+<defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<rect x="5" y="40" width="100" height="50" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="55" y="62" text-anchor="middle">forest</text><text x="55" y="79" text-anchor="middle">photos</text>
+<rect x="135" y="40" width="100" height="50" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="185" y="62" text-anchor="middle">COLMAP</text><text x="185" y="79" text-anchor="middle" class="muted">camera poses</text>
+<rect x="265" y="40" width="100" height="50" rx="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/><text x="315" y="62" text-anchor="middle">Gaussian</text><text x="315" y="79" text-anchor="middle">Splatting</text>
+<rect x="395" y="40" width="100" height="50" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="445" y="62" text-anchor="middle">mesh</text><text x="445" y="79" text-anchor="middle" class="muted">for collisions</text>
+<rect x="525" y="40" width="110" height="50" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="580" y="62" text-anchor="middle">simulator</text><text x="580" y="79" text-anchor="middle">obstacles</text>
+<line x1="105" y1="65" x2="133" y2="65" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah3)"/>
+<line x1="235" y1="65" x2="263" y2="65" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah3)"/>
+<line x1="365" y1="65" x2="393" y2="65" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah3)"/>
+<line x1="495" y1="65" x2="523" y2="65" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/>
+<text x="445" y="112" text-anchor="middle" class="muted">the hard step</text>
+<rect x="125" y="125" width="120" height="36" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="185" y="148" text-anchor="middle" class="muted">IMU-aided poses</text>
+<line x1="185" y1="125" x2="185" y2="92" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/>
+<text x="256" y="148" class="muted">an idea we didn't get to build</text>
+</svg>
+<figcaption>From photos to simulator obstacles. Dashed parts were planned but not finished.</figcaption>
+</figure>
+
+<p>Two steps were harder than we expected:</p>
 <ul>
-<li>A navigation agent trained with Proximal Policy Optimization (PPO), a reinforcement learning method, in a custom AirSim environment.</li>
-<li>Standard simulators draw trees and obstacles too simply. 3D Gaussian Splatting, which rebuilds real scenes from photos, gave the agent more realistic obstacles to learn from.</li>
+<li><strong>Camera poses.</strong> COLMAP relies on matching features between photos, and forest photos are full of leaves that look alike. Adding the drone's IMU (its motion sensor) to help estimate the poses would have made this more robust, but we didn't get to it.</li>
+<li><strong>Splat to mesh.</strong> A splat looks right, but it is a cloud of soft blobs with no hard surfaces. A physics engine needs solid meshes to know when the drone has hit something, and turning thin trunks and leaves into clean meshes is an open problem.</li>
+</ul>
+
+<h2>The drone</h2>
+<figure>
+<img src="/assets/rl-forest-drone/ega-drone.jpg" alt="The EGA drone: a small orange and black quadcopter with red motors" width="100%">
+<figcaption>The EGA drone the team built to fly under the canopy.</figcaption>
+</figure>
+
+<h2>Looking back</h2>
+<p>We chased two big goals in a short time: an RL drone that flies itself through a forest, and a realistic simulator built from real forests. Each is a research project on its own, and trying to do both meant neither became as clean as I wanted. I would now pick one, and make the reward and the evaluation solid before adding anything else.</p>
+<p>The second goal turned out to be where the field was heading. Tools such as NVIDIA's Omniverse NuRec now rebuild real places from sensor recordings as 3D Gaussian scenes that robotics simulators can use, which is the same idea we were trying to get working by hand.</p>
+
+<h2>What I learned</h2>
+<ul>
+<li>In RL, the reward is the specification. Small per-step signals make learning possible; the big terminal rewards define what success means.</li>
+<li>Choose the action space carefully. Letting a proven controller handle balance turned an almost impossible problem into a learnable one.</li>
+<li>Make the agent's incentives visible. Logging every reward term and drawing them in the simulator was how we found out why the agent did strange things.</li>
+<li>A good-looking reconstruction isn't yet a simulator: physics needs geometry, and getting geometry out of splats is hard.</li>
 </ul>
