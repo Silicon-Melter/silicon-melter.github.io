@@ -29,7 +29,7 @@
 </ul>
 
 <h2>The data</h2>
-<p>About 5,000 short chat messages labelled flirty (1) or friendly (0). After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. I balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% for testing.</p>
+<p>About 5,000 short chat messages labelled flirty (1) or friendly (0), from the <a href="https://huggingface.co/datasets/ieuniversity/flirty_or_not">Flirty or Not dataset</a> by IE University (reference project: <a href="https://github.com/alyssafrndz/Flirtation-analysis">alyssafrndz/Flirtation-analysis</a>). The data and its labels are theirs; the model and the cleaning experiments are mine. After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. I balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% for testing.</p>
 
 <h2>Cleaning the text: where most of the work went</h2>
 <p>Chat messages are messy, and a word-counting model only sees what you give it. Each step below changes which "words" exist:</p>
