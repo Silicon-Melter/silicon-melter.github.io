@@ -9,12 +9,27 @@
 <meta property="og:description" content="A high-school team project: a drone that learns to fly between trees by reinforcement learning in AirSim, and a Gaussian Splatting pipeline to bring real forests into the simulator.">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body>
-<header class="site"><div class="wrap">
+<body class="article">
+<header class="masthead"><div class="bar">
 <a class="name" href="/">Noppawit Tharakittikirati</a>
-<nav><a href="/">Home</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+<nav><a href="/">About</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/Noppawit_Tharakittikirati_CV.pdf">CV</a></nav>
 </div></header>
-<main><div class="wrap">
+<div class="layout">
+<aside class="profile">
+<div class="avatar initials" aria-hidden="true">NT</div>
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
 <h1>EGA drone: teaching a drone to fly through a forest</h1>
 <p class="meta">May 2023 &ndash; Apr 2024 &middot; High-school team project, Prince Royal's College, Chiang Mai &middot; Gold, Thailand Young Scientist Festival 2023 &middot; Python, Stable Baselines3 (PPO), AirSim, Unreal Engine, COLMAP, 3D Gaussian Splatting</p>
 <p class="lead">Every dry season, forest fires fill Chiang Mai with smoke. Fire crews watch huge areas on foot, and camera drones usually fly above the trees, where they can't see what is happening under the canopy. Our team of three wanted a drone that could fly itself between the trees. We called it EGA, short for EcoGuardianAI.</p>
@@ -61,7 +76,7 @@
 </figure>
 
 <h2>Choosing what the network controls</h2>
-<p>Our first design was the most ambitious: from raw sensor readings straight to motor outputs. The network had to learn two things at once, staying in the air and getting somewhere, and the first is already hard. A quadcopter is unstable, so a tiny mistake in motor speeds flips it over long before it can learn anything about trees.</p>
+<p>Our first design was the most ambitious: from raw sensor readings straight to motor outputs. The network had to learn two things at once, staying in the air and getting somewhere, and controlling each motor just to hover is hard enough on its own. Because falling cost reward, the agent found the safest strategy: hover in place and never risk flying towards the goal.</p>
 <p>So we moved one level up. In the second design the network chooses a velocity: a heading (within 45&deg; either side), a speed (1 to 5 m/s) and how long to hold it (0.125 to 3.75 s), at a fixed height of 4 m. AirSim's own low-level controller turns that into motor commands. The network only has to learn where to go, not how to fly.</p>
 
 <figure>
@@ -158,14 +173,23 @@
 
 <p>Two steps were harder than we expected:</p>
 <ul>
-<li><strong>Camera poses.</strong> COLMAP relies on matching features between photos, and forest photos are full of leaves that look alike. Adding the drone's IMU (its motion sensor) to help estimate the poses would have made this more robust, but we didn't get to it.</li>
+<li><strong>Camera poses.</strong> COLMAP works out camera positions by matching features between photos, and it often failed to place our forest photos, where so many leaves look alike. Adding the drone's IMU (its motion sensor) would have made this more robust, but we didn't get to it. In a later project I did combine a depth camera with an IMU for localisation.</li>
 <li><strong>Splat to mesh.</strong> A splat looks right, but it is a cloud of soft blobs with no hard surfaces. A physics engine needs solid meshes to know when the drone has hit something, and turning thin trunks and leaves into clean meshes is an open problem.</li>
 </ul>
 
 <h2>The drone</h2>
+<p>I built the flying hardware: a quadcopter with a Pixhawk 2.4.8 flight controller, a Jetson Nano as the onboard computer to run the network, and an Intel RealSense D435 depth camera, the real-world version of the depth image the agent sees in simulation. Prop guards protect the propellers.</p>
 <figure>
-<img src="/assets/rl-forest-drone/ega-drone.jpg" alt="The EGA drone: a small orange and black quadcopter with red motors" width="100%">
-<figcaption>The EGA drone the team built to fly under the canopy.</figcaption>
+<img src="/assets/rl-forest-drone/ega-drone-d435.jpg" alt="The EGA drone: a red quadcopter frame with prop guards, a Jetson Nano on top and a RealSense depth camera at the front" width="100%">
+<figcaption>The finished drone: Pixhawk 2.4.8, Jetson Nano and RealSense D435 (the grey camera at the front).</figcaption>
+</figure>
+<figure>
+<img src="/assets/rl-forest-drone/ega-drone-build.jpg" alt="Building the drone at a workbench covered in parts and tools" width="100%">
+<figcaption>Building it, April 2024.</figcaption>
+</figure>
+<figure>
+<video src="/assets/rl-forest-drone/ega-drone-hover.mp4" poster="/assets/rl-forest-drone/ega-drone-hover-poster.jpg" controls muted playsinline loop preload="none" width="100%"></video>
+<figcaption>A static test of motor control and direction inside our netted test area, April 2024.</figcaption>
 </figure>
 
 <h2>Looking back</h2>
@@ -175,16 +199,16 @@
 <h2>What I learned</h2>
 <ul>
 <li>In RL, the reward is the specification. Small per-step signals make learning possible; the big terminal rewards define what success means.</li>
+<li>Penalties shape behaviour as much as rewards. A penalty for falling taught our first agent never to leave its hover.</li>
 <li>Choose the action space carefully. Letting a proven controller handle balance turned an almost impossible problem into a learnable one.</li>
 <li>Make the agent's incentives visible. Logging every reward term and drawing them in the simulator was how we found out why the agent did strange things.</li>
 <li>A good-looking reconstruction isn't yet a simulator: physics needs geometry, and getting geometry out of splats is hard.</li>
 </ul>
-</div></main>
-<footer><div class="wrap">
-<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
-<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
-<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
-<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+</main>
+</div>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
 </div></footer>
 </body>
 </html>

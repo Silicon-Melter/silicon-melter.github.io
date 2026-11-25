@@ -2,16 +2,18 @@ title: Noppawit Tharakittikirati
 description: Robotics and AI Engineering student at KMITL working on end-to-end autonomous driving, ML systems and robotics.
 nav: home
 ---
-<h1>Noppawit Tharakittikirati</h1>
+<h1 class="hello">Hi, I'm Noppawit</h1>
 <p class="lead">I'm a third-year Robotics and AI Engineering student at KMITL in Bangkok. My focus areas are end-to-end autonomous driving, AI optimisation (custom CUDA kernels, inference engines, RAG, and context and prompt design), ML systems and agentic engineering.</p>
 <p>My main project is end-to-end driving: one network that turns camera images and LiDAR into the path a car should drive. I started it as a research intern with Prof. Jui-Chiu Chiang at National Chung Cheng University in Taiwan. Along the way I've designed a fused CUDA kernel, built a scheduler for the six GPUs I work on (the A100 and two RTX 4090s are sponsored by the AIMS Lab at KMITL), and published the driving datasets I collected.</p>
 <p>Before that I built drones and robots. This site keeps the write-ups for both.</p>
-<p class="links"><a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a><a href="https://github.com/Silicon-Melter">GitHub</a><a href="https://huggingface.co/earth37815">Hugging Face</a><a href="mailto:n.tharakittikirati@gmail.com">Email</a></p>
+<p class="looking"><strong>Looking for</strong> an AI engineering role or a research internship. Thai (native), English (IELTS 7.5).</p>
 
-<h2>Latest</h2>
-<div class="cards">
-<a class="card" href="/posts/fused-cuda-kernel/"><span class="y">Nov 2026</span><div class="t">A fused CUDA kernel made our slowest layer 54&times; faster</div><div class="d">How profiling found 140,000 tiny GPU launches per training step, and what replaced them.</div></a>
-</div>
+<h2 id="projects">Selected projects</h2>
+{{projects:selected}}
+<p class="more"><a href="/projects/">All projects &rarr;</a></p>
 
-<h2>Looking for</h2>
-<p>An AI engineering role or a research internship. Thai (native), English (IELTS 7.5).</p>
+<h2 id="experience">Experience</h2>
+{{include:_partials/experience.html}}
+
+<h2 id="honors">Honors</h2>
+{{include:_partials/awards.html}}
