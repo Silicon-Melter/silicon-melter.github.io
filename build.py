@@ -12,6 +12,7 @@ Each _src/<path>.html starts with a small header block, then the page body:
     tag: CUDA                (optional, a short word for the tile when there is no thumb)
     code: https://github.com/...   (optional, adds a "Code" link in lists)
     selected: yes            (optional, also list it under "Selected projects" on the home page)
+    redirect: /path          (optional; the page only forwards visitors to that address)
     project: yes             (only for pages outside projects/ that should appear in the project list)
     ---
     <main content in HTML>
@@ -30,7 +31,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "_src"
 SITE = "Noppawit Tharakittikirati"
 NAV = [("home", "/", "About"), ("projects", "/projects/", "Projects"),
-       ("posts", "/posts/", "Posts"), ("cv", "/cv/", "CV")]
+       ("posts", "/posts/", "Posts"), ("cv", "/cv/Noppawit_Tharakittikirati_CV.pdf", "CV")]
 
 # Profile sidebar, shown on every page (the left column on wide screens, a compact block on phones).
 ICON = {
@@ -100,6 +101,12 @@ PAGE = """<!doctype html>
 </div></footer>
 </body>
 </html>
+"""
+
+REDIRECT = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{title}</title>
+<meta http-equiv="refresh" content="0; url={to}"><link rel="canonical" href="{to}">
+</head><body><p><a href="{to}">Continue to {title}</a></p></body></html>
 """
 
 def parse_meta(text):
@@ -179,6 +186,11 @@ def build():
         title = p["title"] if str(rel) == "index" else f'{p["title"]} · {SITE}'
         kind = "article" if rel.name != "index" else "listing"
         out.parent.mkdir(parents=True, exist_ok=True)
+        if p.get("redirect"):
+            to = html.escape(p["redirect"], quote=True)
+            out.write_text(REDIRECT.format(to=to, title=html.escape(title)), encoding="utf-8")
+            print("built", out.relative_to(ROOT), "->", p["redirect"])
+            continue
         out.write_text(PAGE.format(title=html.escape(title), desc=html.escape(p.get("description", "")),
                                    site=SITE, nav=nav, sidebar=SIDEBAR, kind=kind, body=body),
                        encoding="utf-8")
