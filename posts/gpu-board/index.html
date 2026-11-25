@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A job board for six GPUs and a few AI coding agents · Noppawit Tharakittikirati</title>
+<meta name="description" content="How I keep six lab GPUs from being double-booked when several AI coding agents start training and evaluation jobs: a static web page, a private GitHub repo as the database, and a small sync service on each machine.">
+<meta property="og:title" content="A job board for six GPUs and a few AI coding agents · Noppawit Tharakittikirati">
+<meta property="og:description" content="How I keep six lab GPUs from being double-booked when several AI coding agents start training and evaluation jobs: a static web page, a private GitHub repo as the database, and a small sync service on each machine.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="article">
+<header class="masthead"><div class="bar">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">About</a><a href="/projects/">Projects</a><a href="/posts/" class=on>Posts</a><a href="/cv/Noppawit_Tharakittikirati_CV.pdf">CV</a></nav>
+</div></header>
+<div class="layout">
+<aside class="profile">
+<img class="avatar" src="/assets/img/profile.jpg" alt="Photo of Noppawit Tharakittikirati" width="160" height="160">
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
+<h1>A job board for six GPUs and a few AI coding agents</h1>
+<p class="meta">November 2026 &middot; about 6 minutes</p>
+
+<p class="lead">My research runs on six GPUs spread over five machines, and much of the day-to-day work on them is done by AI coding agents rather than by me typing commands. With several agents able to start jobs, I needed one place that shows what runs where and lets me decide what goes next. This post is about that place: a small job board.</p>
+
+<figure>
+<img src="/assets/gpu-board/gpu-board-overview.jpg" alt="The top of the GPU board: counters for running and queued jobs, the hottest GPU at 83 °C, and two queued jobs waiting for a Go ahead or Wait decision" width="100%">
+<figcaption>The top of the board. Two queued jobs wait for my decision because their GPUs are busy. All the screenshots in this post come from a local copy of the page filled with made-up jobs, with every GPU fully loaded.</figcaption>
+</figure>
+
+<h2>The problem</h2>
+<p>The hardware is an A100 (80 GB) and two RTX 4090s, sponsored by the AIMS Lab at KMITL, plus the two RTX 3070s in my own PC and an RTX 3060 Ti. Training a driving model, running it through hundreds of test routes in a simulator, converting datasets: each of these keeps a GPU busy for hours.</p>
+<p>The work is split between several Claude Code sessions. Each one is an AI coding agent working in its own repository: one writes the model code, one prepares data, one runs evaluations, one keeps the plan. They can start jobs on their own, which is the point, but they can't see each other. Without some shared record, two of them can start jobs on the same GPU, both run out of memory (VRAM, the GPU's own memory), and the night is lost. And a job that died at 2 AM looks just like a job that is still running until somebody checks.</p>
+<p>So I wanted four things: one page that shows every job on every machine, a rule that a GPU job waits until I say go when its GPU is busy, a way to talk to the agent behind a job, and nothing extra to host or pay for.</p>
+
+<h2>How it works</h2>
+<p>There are three parts, and none of them is a server I run.</p>
+<ul>
+<li><strong>A private GitHub repository is the database.</strong> Each machine has its own branch with one file, <code>state.json</code>: its temperatures, GPU load and memory, and its jobs. One more branch holds <code>control.json</code>, which is where my decisions go (Go ahead, Wait, messages, which machines are on hold). Every write is a normal git commit, so there is a full history for free.</li>
+<li><strong>A small sync service runs on each machine.</strong> Every 2 minutes, and right after a job changes, it reads the GPU sensors, checks that each job's process is still alive, takes the last line of its log, and pushes the result to that machine's branch. It also passes my decisions and messages on to the agent.</li>
+<li><strong>The board is one static web page</strong> on GitHub Pages. It reads and writes the repository through GitHub's API, signed in with GitHub. It has no backend of its own.</li>
+</ul>
+<p>The agents use one command, <code>board-job</code>, to register a job before it starts: which machine, which GPU, roughly how much memory and how many hours. If the GPU is free, the job starts. If it is busy, the job is queued and shows up under <em>Needs your call</em>. CPU and background jobs never wait. When a GPU frees up, the next job in line for it can start on its own.</p>
+
+<figure>
+<img src="/assets/gpu-board/gpu-board-machines.jpg" alt="Machine cards for the A100 server and two RTX 4090 boxes, each listing its GPU's temperature, use and memory, with running and queued jobs underneath" width="100%">
+<figcaption>One card per machine. Each GPU shows its temperature, how busy it is and how much memory is in use, with its jobs underneath. A running job shows its progress, its time left, whether its process is still alive, and the last line of its log.</figcaption>
+</figure>
+
+<h2>What I look at</h2>
+<p>Most of the page answers one question: does anything need me? The counters at the top say how many jobs run, how many wait for my decision, and how many <em>need a look</em>. A job needs a look when its process has gone, when it is stuck, or when it has sent no update for more than two hours. The hottest GPU turns orange from 80 &deg;C and red from 87 &deg;C.</p>
+<p>Under each job I can press <strong>Go ahead</strong> or <strong>Wait</strong>, send a short message to the agent behind it, or press <strong>Bump</strong> to ask the machine for fresh readings right away. A small tag shows whether that agent is listening at the moment. If it is, a message reaches it in about 10 seconds. If the agent's session has ended, the board says so, because then nothing I send will get through.</p>
+<p>Full training runs on the A100 have their own to-do list in a separate repository. The board shows that list read-only, so I can see the whole picture on one screen.</p>
+
+<figure>
+<img src="/assets/gpu-board/gpu-board-dark.jpg" alt="The machine cards in dark mode" width="100%">
+<figcaption>The same machine cards in dark mode, which follows the system setting.</figcaption>
+</figure>
+
+<h2>A few details that mattered</h2>
+<ul>
+<li><strong>Checking often without hitting GitHub's limits.</strong> The page checks for changes every 5 seconds. It does this with a single <em>conditional</em> request that asks only whether any board branch moved. When nothing changed, GitHub answers "not modified", which doesn't count against the rate limit. Only the files on branches that moved get downloaded.</li>
+<li><strong>Two people saving at once.</strong> Saving a decision means reading <code>control.json</code>, changing it, and writing it back with the version I read. If someone else saved in between, GitHub refuses the write, and the page reads the file again and retries once.</li>
+<li><strong>Signing in from a static page.</strong> GitHub's sign-in flow needs a secret that can't live in a public page. A tiny relay on Cloudflare's free tier holds that secret and swaps GitHub's sign-in code for a token. The relay stores nothing, and the token can reach only the board's repositories.</li>
+<li><strong>Old messages, new jobs.</strong> Agents reuse job names, so every decision and message carries the start time of the job it was meant for. A "Wait" from yesterday's run doesn't stop today's.</li>
+</ul>
+
+<figure style="max-width:320px">
+<img src="/assets/gpu-board/gpu-board-phone.jpg" alt="The board on a phone screen, with the counters stacked and the first queued job below" width="100%">
+<figcaption>The same board on a phone, so a decision doesn't need a laptop.</figcaption>
+</figure>
+
+<h2>What I learned</h2>
+<p>The design rule that worked best was that agents never decide on their own when a GPU is shared. They can start anything on a free GPU, but a busy one means "ask". That one rule keeps two jobs off the same GPU, and the agents rarely have to wait, since most of the time something is free.</p>
+<p>Using git as the database also worked better than I expected. A board without a server looked like a compromise at first. In practice it means nothing to keep running, every change has a history, and an agent can read the same files the page reads.</p>
+<p>The board has since grown a second page, an "agent office", which shows the agent sessions themselves: which ones are active, what helpers they started, and who messaged whom. That one deserves its own post.</p>
+</main>
+</div>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
+</div></footer>
+</body>
+</html>
