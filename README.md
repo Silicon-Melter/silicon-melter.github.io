@@ -27,7 +27,7 @@ selected: yes            # optional, also show it on the home page
 ...
 ```
 
-The project list, the home page's "Selected projects" and the posts list are generated from these headers, so no card needs to be written by hand. A project without a page of its own (a dataset, a tool) is a block in `_src/_links.txt` with a `url:`. Experience and awards live once in `_src/_partials/` and appear on both the home page and the CV page. To show a photo in the sidebar instead of the initials, add a square `assets/img/profile.jpg` and rebuild.
+The project list, the home page's "Selected projects" and the posts list are generated from these headers, so no card needs to be written by hand. A project without a page of its own (a dataset, a tool) is a block in `_src/_links.txt` with a `url:`. Experience and awards live once in `_src/_partials/` and appear on the home page. To show a photo in the sidebar instead of the initials, add a square `assets/img/profile.jpg` and rebuild.
 
 Preview with `python3 -m http.server` and open http://localhost:8000. Commit everything, including the built pages, and push.
 
