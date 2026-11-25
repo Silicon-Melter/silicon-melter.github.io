@@ -16,7 +16,7 @@ nav: projects
 date: 2026-11            # sorts the lists, newest first
 when: 2026               # optional, the date as shown
 card: One line shown in the project list
-thumb: /assets/img/my-project.jpg   # optional; otherwise a text tile shows `tag`
+thumb: /assets/img/my-project.jpg   # a photo, or a drawn SVG in assets/thumbs/ (4:3, own dark-mode colours)
 tag: ROS                 # optional
 code: https://github.com/...        # optional
 selected: yes            # optional, also show it on the home page

@@ -5,7 +5,7 @@ title: Open driving datasets on Hugging Face
 url: https://huggingface.co/earth37815
 date: 2026-10
 when: 2026
-tag: Data
+thumb: /assets/thumbs/driving-datasets.svg
 selected: yes
 card: Expert driving recorded in CARLA, five curated subsets (277 GB) plus a full pack, MIT licence.
 
@@ -13,5 +13,5 @@ title: GPU Board
 url: https://silicon-melter.github.io/gpu-board/
 date: 2026-10
 when: 2026
-tag: Ops
+thumb: /assets/thumbs/gpu-board.svg
 card: A job board for the six GPUs I work on (A100 and RTX 4090s sponsored by the AIMS Lab, KMITL), shared with several AI coding agents.
