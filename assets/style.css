@@ -86,7 +86,8 @@ th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white
 th{color:var(--muted);font-weight:560}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 figure{margin:24px 0}
-figure img{border-radius:8px}
+figure img,figure video{border-radius:8px}
+video{max-width:100%;height:auto;display:block}
 figcaption{color:var(--muted);font-size:14px;margin-top:6px}
 .note{border-left:3px solid var(--line);padding:2px 0 2px 14px;color:var(--muted);font-size:15px}
 .todo{background:#fff3c4;color:#5a4800;padding:1px 6px;border-radius:4px;font-size:.9em}
