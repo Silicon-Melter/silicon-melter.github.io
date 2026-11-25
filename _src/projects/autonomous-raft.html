@@ -1,18 +1,149 @@
-title: Sensor fusion and drive-by-wire for an autonomous raft
-description: EKF fusion of GPS and IMU, and dual PID heading hold for an unmanned surface vehicle.
+title: Sensor fusion and heading control for a leaf-collecting raft
+description: A course project in feedback control: a twin-thruster raft that collects leaves and holds its heading, using a flight controller's GPS and IMU fusion, ROS 2 and dual PID on an Arduino.
 nav: projects
 date: 2025-11
 when: 2025
-tag: USV
-card: EKF state estimation and heading hold against water currents.
+code: https://github.com/Silicon-Melter/Feedback-Controlled-Raft
+thumb: /assets/autonomous-raft/raft-on-pond.jpg
+card: A leaf-collecting raft that holds its heading against wind and current, using EKF state estimation and PID control.
 ---
-<h1>Sensor fusion and drive-by-wire for an autonomous raft</h1>
-<p class="meta">2025 &middot; C++, Python, ROS 2, EKF, MAVROS, Arduino, UART, PID</p>
-<p class="lead">On water, currents push a boat sideways all the time. This project gave a small unmanned raft a reliable sense of where it was and which way it pointed, and used that to hold its course.</p>
-<p><span class="todo">Add a photo of the raft here.</span></p>
-<h2>What I built</h2>
+<h1>Sensor fusion and heading control for a leaf-collecting raft</h1>
+<p class="meta">2025 &middot; Feedback Control course project (01416304), KMITL &middot; C++ (Arduino), Python, ROS 2, MAVROS, EKF, UART, PID</p>
+<p class="lead">Our raft's job was to sweep leaves off the surface of a pond. On water, wind and current push a boat around and turn it all the time, so a person steering with a radio controller is constantly correcting. For our feedback control course, I gave the raft a sense of which way it was pointing and used that to hold its heading for the driver.</p>
+<figure>
+<img src="/assets/autonomous-raft/raft-on-pond.jpg" alt="The raft on a campus pond: two light-blue pipe floats, a white electronics box with the GPS antenna on top, and the leaf collector at the front" width="100%">
+<figcaption>Test day on the campus pond, 2025.</figcaption>
+</figure>
+
+<h2>How the raft is driven</h2>
+<p>The raft has no rudder. It has two brushless thrusters, one on each side, and it steers the way a tank does: run the left thruster harder than the right and it turns right. So every steering command ends up as two numbers: how hard to push each side. A third, smaller motor runs the leaf collector: a roller at the front with zip-tie paddles that sweeps floating leaves into a mesh net slung between the floats.</p>
+<figure>
+<img src="/assets/autonomous-raft/raft-build.jpg" alt="The raft on a workbench: two blue PVC pipe floats held by 3D-printed brackets, an orange roller with black zip-tie paddles above a blue mesh net, and two white boxes of electronics with the GPS antenna on top" width="100%" style="max-width:520px;display:block;margin:0 auto">
+<figcaption>The raft before going in the water: pipe floats, the leaf roller and net at the front, and the electronics boxes behind.</figcaption>
+</figure>
+<p>The problem we started from was simple: with the throttle pushed forward and both thrusters given the same command, the raft did not go straight. Small differences between the two motors and propellers, plus drag on the hull, turned it to one side, so the driver had to keep correcting by hand.</p>
+<p>"Drive-by-wire" means the radio sticks are not wired to the motors. They go to a microcontroller, an Arduino, which decides what the motors should do. That leaves a place in the middle where the software can help.</p>
+
+<figure>
+<svg viewBox="0 0 420 560" width="100%" style="max-width:460px;display:block;margin:0 auto" role="img" aria-label="Diagram: a GPS and the IMU inside the CUAV X7 flight controller feed its EKF. A Raspberry Pi running ROS 2 and MAVROS reads the fused state and sends speed and heading over a serial line to an Arduino. The Arduino also reads the radio receiver, runs the PID loops, and drives the left and right thruster ESCs and the leaf collector motor.">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<g style="fill:none;stroke:var(--line);stroke-width:1.5">
+<rect x="10" y="10" width="400" height="150" rx="10" style="stroke-dasharray:5 4"/>
+<rect x="10" y="320" width="400" height="120" rx="10" style="stroke-dasharray:5 4"/>
+</g>
+<text x="24" y="32" class="muted">Flight controller &middot; CUAV X7</text>
+<text x="396" y="342" text-anchor="end" class="muted">Drive-by-wire &middot; Arduino</text>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="30" y="50" width="150" height="48" rx="6"/>
+<rect x="240" y="50" width="150" height="48" rx="6"/>
+<rect x="135" y="104" width="150" height="44" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="135" y="190" width="150" height="48" rx="6"/>
+<rect x="30" y="270" width="150" height="38" rx="6"/>
+<rect x="135" y="360" width="150" height="62" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="15" y="490" width="120" height="48" rx="6"/>
+<rect x="150" y="490" width="120" height="48" rx="6"/>
+<rect x="285" y="490" width="120" height="48" rx="6"/>
+</g>
+<text x="105" y="71" text-anchor="middle">GPS</text><text x="105" y="88" text-anchor="middle" class="muted">Pixhawk GPS</text>
+<text x="315" y="71" text-anchor="middle">9-axis IMU</text><text x="315" y="88" text-anchor="middle" class="muted">built in</text>
+<text x="210" y="124" text-anchor="middle">EKF</text><text x="210" y="140" text-anchor="middle" class="muted">fused state</text>
+<text x="210" y="211" text-anchor="middle">Raspberry Pi</text><text x="210" y="228" text-anchor="middle" class="muted">ROS 2 + MAVROS</text>
+<text x="105" y="294" text-anchor="middle">Radio receiver</text>
+<text x="210" y="382" text-anchor="middle">Speed PID</text><text x="210" y="399" text-anchor="middle">Heading PID</text><text x="210" y="415" text-anchor="middle" class="muted">+ mixing</text>
+<text x="75" y="511" text-anchor="middle">Left thruster</text><text x="75" y="528" text-anchor="middle" class="muted">ESC</text>
+<text x="210" y="511" text-anchor="middle">Leaf collector</text><text x="210" y="528" text-anchor="middle" class="muted">DC motor</text>
+<text x="345" y="511" text-anchor="middle">Right thruster</text><text x="345" y="528" text-anchor="middle" class="muted">ESC</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)">
+<path d="M105,98V126H131"/>
+<path d="M315,98V126H289"/>
+<path d="M210,148V186"/>
+<path d="M240,238V356"/>
+<path d="M105,308V391H131"/>
+<path d="M170,422V460H75V486"/>
+<path d="M210,422V486"/>
+<path d="M250,422V460H345V486"/>
+</g>
+<text x="218" y="174" class="muted" style="font-size:11px">MAVLink</text>
+<text x="248" y="272" style="font-size:12px">speed, heading</text>
+<text x="248" y="286" class="muted" style="font-size:11px">serial (UART), checksummed</text>
+<text x="98" y="350" text-anchor="end" class="muted" style="font-size:11px">sticks,</text><text x="98" y="364" text-anchor="end" class="muted" style="font-size:11px">switches</text>
+</svg>
+<figcaption>The flight controller works out how the raft is moving, the Pi passes that on, and the Arduino turns the driver's sticks and that estimate into motor commands.</figcaption>
+</figure>
+
+<h2>Knowing where the raft points</h2>
+<p>A GPS alone gives position, but only a few times a second and with metres of noise, and it says nothing about which way the raft faces when it sits still. An IMU (accelerometer, gyroscope and magnetometer, hence "9-axis") gives orientation quickly but drifts over time. An Extended Kalman Filter (EKF) combines the two: it trusts each sensor for what it does well and produces one smooth estimate of position, speed and heading.</p>
+<p>We did not write our own filter. A drone flight controller, a CUAV X7 with a Pixhawk GPS, already runs a well-tested EKF. A Raspberry Pi reads its output through MAVROS, the ROS 2 bridge to flight controllers, and sends the two numbers our controller needs, forward speed and heading, to the Arduino as one short text line per update, with a checksum so a corrupted line can be spotted.</p>
+
+<h2>Two PID loops: speed and heading</h2>
+<p>A PID controller compares where you are with where you want to be and pushes in proportion to the error (P), to how long the error has lasted (I) and to how fast it is changing (D). The raft runs two of them side by side:</p>
 <ul>
-<li><strong>State estimation.</strong> An Extended Kalman Filter, run through MAVROS, fuses GPS position with a 9-axis IMU's orientation.</li>
-<li><strong>Heading-assisted control.</strong> Two PID loops regulate forward speed and yaw separately, so when the operator steers, the raft corrects for currents automatically.</li>
-<li><strong>Drive-by-wire.</strong> An Arduino drives the motors from commands sent over serial.</li>
+<li><strong>Speed.</strong> The throttle stick asks for a forward speed, up to 0.3&nbsp;m/s, and the speed loop pushes both thrusters together to reach it.</li>
+<li><strong>Heading.</strong> When the driver switches to assisted mode, the raft remembers the heading it had at that moment and holds it. The steering stick no longer turns the thrusters directly: it turns the <em>target</em> heading, at up to 20&deg; per second. If the current swings the bow away, the heading loop pushes one side harder than the other to bring it back, without the driver doing anything.</li>
+</ul>
+<p>The design changed on the way. My first version copied the idea of a drone's "stabilise" mode: the sticks set a target forward speed and a target turning rate, and the loops held those rates. The final code holds the heading angle itself instead, so slow drift away from the course is corrected too, not just turning. I used Gemini as a sounding board while working out this design.</p>
+<p>The two outputs are then mixed: speed is added to both sides, the heading correction is added to one side and taken from the other.</p>
+
+<figure>
+<svg viewBox="0 0 440 250" width="100%" style="max-width:480px;display:block;margin:0 auto" role="img" aria-label="Diagram: the throttle stick sets a target speed and the speed PID compares it with the measured speed. The steering stick turns a target heading and the heading PID compares it with the measured heading. The speed output is added to both thrusters; the heading output is added to the left and subtracted from the right.">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="10" y="30" width="110" height="48" rx="6"/>
+<rect x="10" y="150" width="110" height="48" rx="6"/>
+<rect x="165" y="30" width="110" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="165" y="150" width="110" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="320" y="30" width="110" height="48" rx="6"/>
+<rect x="320" y="150" width="110" height="48" rx="6"/>
+</g>
+<text x="65" y="51" text-anchor="middle">Throttle stick</text><text x="65" y="68" text-anchor="middle" class="muted">target speed</text>
+<text x="65" y="171" text-anchor="middle">Steering stick</text><text x="65" y="188" text-anchor="middle" class="muted">target heading</text>
+<text x="220" y="59" text-anchor="middle">Speed PID</text>
+<text x="220" y="179" text-anchor="middle">Heading PID</text>
+<text x="375" y="51" text-anchor="middle">Left thruster</text><text x="375" y="68" text-anchor="middle" class="muted">speed + turn</text>
+<text x="375" y="171" text-anchor="middle">Right thruster</text><text x="375" y="188" text-anchor="middle" class="muted">speed &minus; turn</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)">
+<path d="M120,54H161"/>
+<path d="M120,174H161"/>
+<path d="M275,54H316"/>
+<path d="M275,62L316,166"/>
+<path d="M275,174H316"/>
+<path d="M275,166L316,62"/>
+<path d="M220,14V26"/>
+<path d="M220,236V202"/>
+</g>
+<text x="220" y="11" text-anchor="middle" class="muted" style="font-size:11px">measured speed (EKF)</text>
+<text x="220" y="247" text-anchor="middle" class="muted" style="font-size:11px">measured heading (EKF)</text>
+</svg>
+<figcaption>Assisted mode: the driver asks for a speed and a direction, and the two loops make the thrusters deliver them.</figcaption>
+</figure>
+
+<h2>Making it safe to test on water</h2>
+<p>A raft that drives off on its own in a pond is hard to catch, so much of the Arduino code is about failing safely:</p>
+<ul>
+<li><strong>Arm switch.</strong> The motors stay stopped until a switch on the transmitter arms them, and flipping it back stops them at once.</li>
+<li><strong>Stale data falls back to manual.</strong> If no fresh speed and heading has arrived from the Pi for half a second, the Arduino ignores the controller and drives straight from the sticks, so the driver never loses control because a cable or the Pi hiccups.</li>
+<li><strong>Measured neutrals.</strong> The two reversible ESCs did not stop at the textbook 1500&nbsp;&micro;s pulse: one stopped at 1430 and the other at 1400. I measured each and centred the commands on those values, with a small dead zone so the motors don't creep at rest.</li>
+</ul>
+<p>The radio side uses my own small Arduino libraries: one reads the FlySky receiver's digital iBUS signal and calibrates each channel to &minus;100&hellip;+100, one parses the Pi's packets, and one holds the PID loops. The control loop aims for about 200 updates per second.</p>
+
+<h2>What went wrong: the stabiliser wheel</h2>
+<p>The original plan had a second job for the controller: keeping the raft level. A motor-driven stabiliser wheel, with limit switches at each end of its travel, was meant to counter the raft's roll, with its own PID loop on the roll angle. On the water, the wheel broke apart under the shear forces on it. With no time to rebuild it, we dropped roll control, and the final raft controls heading only.</p>
+
+<h2>Results</h2>
+<figure>
+<video src="/assets/autonomous-raft/raft-pond.mp4" poster="/assets/autonomous-raft/raft-pond-poster.jpg" controls muted playsinline preload="none" width="100%" style="max-width:360px;display:block;margin:0 auto"></video>
+<figcaption>Fine control near the edge of the pond, lining up to collect leaves.</figcaption>
+</figure>
+<p>With the heading loop on, the raft was very easy to drive. The problem we started with was gone: pushing the stick straight forward now gives a straight line, with no correcting by hand, and the fine moves needed to line up on floating leaves became easy.</p>
+<figure>
+<video src="/assets/autonomous-raft/raft-yaw-hold.mp4" poster="/assets/autonomous-raft/raft-yaw-hold-poster.jpg" controls muted playsinline preload="none" width="100%" style="max-width:360px;display:block;margin:0 auto"></video>
+<figcaption>The heading feedback in action: I only push the throttle stick forward, and the raft holds a straight course across open water.</figcaption>
+</figure>
+
+<h2>What I learned</h2>
+<ul>
+<li>Use the parts that already work. Running the flight controller's EKF instead of writing our own left our time for the control and the safety logic.</li>
+<li>Real hardware is never the datasheet: each ESC needed its own measured neutral before the controller could behave the same on both sides.</li>
+<li>A safe fallback matters more than a clever controller when the test site is a pond.</li>
+<li>Mechanical design limits control design. The stabiliser loop was only as good as the wheel it drove, and when the wheel failed, the loop went with it.</li>
 </ul>
