@@ -117,3 +117,4 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px;paddin
   nav a{padding:4px 8px}
   nav{margin:0 -8px 6px}
 }
+.partof{font-size:14px;color:var(--muted);margin:-4px 0 6px}

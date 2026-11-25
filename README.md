@@ -5,6 +5,8 @@ Personal site of Noppawit Tharakittikirati: project pages and write-ups. Plain H
 ## Edit or add a page
 Every page shares one layout (top bar, profile sidebar, footer), written in `build.py`. Styles are in `assets/style.css`.
 
+**Posts or projects?** A post is one step of the work (a problem, what you tried, what came out); a project page is the finished picture and links to its posts. A post can name its project with `partof: /projects/<name>/`.
+
 **Add a project:** drop one file, `_src/projects/<name>.html`, then run `python3 build.py`. The file is a small header block, `---`, then the page body in HTML:
 
 ```

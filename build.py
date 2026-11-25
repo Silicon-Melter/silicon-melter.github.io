@@ -11,7 +11,8 @@ Each _src/<path>.html starts with a small header block, then the page body:
     thumb: /assets/img/x.jpg (optional; lists show a text tile with `tag` instead)
     tag: CUDA                (optional, a short word for the tile when there is no thumb)
     code: https://github.com/...   (optional, adds a "Code" link in lists)
-    selected: yes            (optional, also list it under "Selected projects" on the home page)
+    selected: yes            (optional, also list it under "Selected projects" on the home page; works for posts too)
+    partof: /projects/x/     (posts only, optional: the project this post is a step of; adds a "Part of" line)
     redirect: /path          (optional; the page only forwards visitors to that address)
     project: yes             (only for pages outside projects/ that should appear in the project list)
     ---
@@ -170,11 +171,16 @@ def build():
     projects = [p for p in pages if is_project(p)] + links
     posts = [p for p in pages if str(p["_rel"]).startswith("posts/") and p["_rel"].name != "index"]
     lists = {"{{projects}}": entry_list(projects),
-             "{{projects:selected}}": entry_list([p for p in projects if p.get("selected") == "yes"]),
+             "{{projects:selected}}": entry_list([p for p in projects + posts if p.get("selected") == "yes"]),
              "{{posts}}": entry_list(posts)}
 
+    by_url = {p["url"]: p for p in pages}
     for p in pages:
         body = p["_body"]
+        parent = by_url.get(p.get("partof", ""))
+        if parent:
+            line = f'<p class="partof">Part of <a href="{parent["url"]}">{html.escape(parent["title"])}</a></p>'
+            body = body.replace("</h1>", "</h1>\n" + line, 1)
         body = re.sub(r"\{\{include:([^}]+)\}\}",
                       lambda m: (SRC / m.group(1).strip()).read_text(encoding="utf-8").strip(), body)
         for k, v in lists.items():
