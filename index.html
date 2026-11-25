@@ -9,31 +9,74 @@
 <meta property="og:description" content="Robotics and AI Engineering student at KMITL working on end-to-end autonomous driving, ML systems and robotics.">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body>
-<header class="site"><div class="wrap">
+<body class="listing">
+<header class="masthead"><div class="bar">
 <a class="name" href="/">Noppawit Tharakittikirati</a>
-<nav><a href="/" class=on>Home</a><a href="/projects/">Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
+<nav><a href="/" class=on>About</a><a href="/projects/">Projects</a><a href="/posts/">Posts</a><a href="/cv/">CV</a></nav>
 </div></header>
-<main><div class="wrap">
-<h1>Noppawit Tharakittikirati</h1>
+<div class="layout">
+<aside class="profile">
+<div class="avatar initials" aria-hidden="true">NT</div>
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
+<h1 class="hello">Hi, I'm Noppawit</h1>
 <p class="lead">I'm a third-year Robotics and AI Engineering student at KMITL in Bangkok. My focus areas are end-to-end autonomous driving, AI optimisation (custom CUDA kernels, inference engines, RAG, and context and prompt design), ML systems and agentic engineering.</p>
 <p>My main project is end-to-end driving: one network that turns camera images and LiDAR into the path a car should drive. I started it as a research intern with Prof. Jui-Chiu Chiang at National Chung Cheng University in Taiwan. Along the way I've designed a fused CUDA kernel, built a scheduler for the six GPUs I work on (the A100 and two RTX 4090s are sponsored by the AIMS Lab at KMITL), and published the driving datasets I collected.</p>
 <p>Before that I built drones and robots. This site keeps the write-ups for both.</p>
-<p class="links"><a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a><a href="https://github.com/Silicon-Melter">GitHub</a><a href="https://huggingface.co/earth37815">Hugging Face</a><a href="mailto:n.tharakittikirati@gmail.com">Email</a></p>
+<p class="looking"><strong>Looking for</strong> an AI engineering role or a research internship. Thai (native), English (IELTS 7.5).</p>
 
-<h2>Latest</h2>
-<div class="cards">
-<a class="card" href="/posts/fused-cuda-kernel/"><span class="y">Nov 2026</span><div class="t">A fused CUDA kernel made our slowest layer 54&times; faster</div><div class="d">How profiling found 140,000 tiny GPU launches per training step, and what replaced them.</div></a>
+<h2 id="news">News</h2>
+<ul class="news">
+<li><span class="d">Nov 2026</span><span>Wrote up the <a href="/posts/fused-cuda-kernel/">fused CUDA kernel</a> that made our slowest layer 54&times; faster.</span></li>
+<li><span class="d">Jul 2026</span><span>Finished my research internship at National Chung Cheng University, Taiwan.</span></li>
+<li><span class="d">May 2026</span><span>Started a research internship on end-to-end driving with Prof. Jui-Chiu Chiang.</span></li>
+<li><span class="d">Mar 2026</span><span>TF SCALE exchange in Singapore, with the Temasek Foundation.</span></li>
+</ul>
+
+<h2 id="projects">Selected projects</h2>
+<ul class="entries">
+<li class="entry"><a class="thumb" href="/posts/fused-cuda-kernel/" tabindex="-1" aria-hidden="true"><span class="tile">CUDA</span></a><div class="body"><p class="et"><a href="/posts/fused-cuda-kernel/">A fused CUDA kernel made our slowest layer 54× faster</a></p><p class="ed">Profiling found 140,000 tiny GPU launches per training step in a LiDAR-camera driving model. One fused op made that layer 54× faster and cut peak memory from 4.1 GiB to 68 MiB.</p><p class="em"><span class="when">Nov 2026</span><a href="/posts/fused-cuda-kernel/">Read</a></p></div></li>
+<li class="entry"><a class="thumb" href="https://huggingface.co/earth37815" tabindex="-1" aria-hidden="true"><span class="tile">Data</span></a><div class="body"><p class="et"><a href="https://huggingface.co/earth37815">Open driving datasets on Hugging Face</a></p><p class="ed">Expert driving recorded in CARLA, five curated subsets (277 GB) plus a full pack, MIT licence.</p><p class="em"><span class="when">2026</span><a href="https://huggingface.co/earth37815">Visit</a></p></div></li>
+<li class="entry"><a class="thumb" href="/projects/gps-denied-drone/" tabindex="-1" aria-hidden="true"><img src="/assets/img/drone-in-flight.jpg" alt="" loading="lazy"></a><div class="body"><p class="et"><a href="/projects/gps-denied-drone/">Autonomous indoor drone without GPS</a></p><p class="ed">Flies a route by itself on optical flow, then maps a room in 3D with a depth camera and 2D LiDAR (ROS 2, PX4, RTAB-Map).</p><p class="em"><span class="when">2025–26</span><a href="/projects/gps-denied-drone/">Read</a></p></div></li>
+<li class="entry"><a class="thumb" href="/projects/rl-forest-drone/" tabindex="-1" aria-hidden="true"><img src="/assets/rl-forest-drone/ega-drone.jpg" alt="" loading="lazy"></a><div class="body"><p class="et"><a href="/projects/rl-forest-drone/">EGA drone: teaching a drone to fly through a forest</a></p><p class="ed">Reinforcement learning in AirSim, and Gaussian Splatting to bring a real forest into the simulator.</p><p class="em"><span class="when">2023–24</span><a href="/projects/rl-forest-drone/">Read</a></p></div></li>
+</ul>
+<p class="more"><a href="/projects/">All projects &rarr;</a></p>
+
+<h2 id="experience">Experience</h2>
+<ul class="dated">
+<li><span class="d">May &ndash; Jul 2026</span><span><strong>Research Intern</strong>, National Chung Cheng University, Taiwan. End-to-end autonomous driving with Prof. Jui-Chiu Chiang.</span></li>
+<li><span class="d">Mar 2026</span><span><strong>TF SCALE Exchange Scholar</strong>, Temasek Foundation, Singapore</span></li>
+<li><span class="d">Jul &ndash; Nov 2025</span><span><strong>Teaching Assistant</strong>, Computer Programming, KMITL</span></li>
+<li><span class="d">Jul 2024 &ndash; Jul 2025</span><span><strong>Robotics &amp; AI Workshop Lecturer</strong>, KMITL</span></li>
+</ul>
+
+<h2 id="honors">Honors</h2>
+<ul class="dated">
+<li><span class="d">2022</span><span><strong>Global Award Winner</strong>, Intel AI Global Impact Festival</span></li>
+<li><span class="d">2023</span><span><strong>Asia Winner and World Championship Runner-up</strong>, Microsoft Imagine Cup</span></li>
+<li><span class="d">2023, 2024</span><span><strong>Finalist</strong>, Regeneron International Science and Engineering Fair (ISEF)</span></li>
+<li><span class="d">2022</span><span><strong>1st Runner-up</strong>, ASEAN-India Grassroots Innovation Forum</span></li>
+<li><span class="d">2022</span><span><strong>First Place and HRH Princess Maha Chakri Sirindhorn's Trophy</strong>, National Software Contest (NSC)</span></li>
+<li><span class="d">2022</span><span><strong>Best of Category</strong>, Prime Minister's Science Award</span></li>
+<li><span class="d">2022</span><span><strong>Winner, Senior Student category</strong>, Thailand ICT Awards (TICTA); represented Thailand at APICTA</span></li>
+<li><span class="d">2022, 2023</span><span><strong>Best of the Best and Gold (2022), Gold (2023)</strong>, Thailand Young Scientist Festival</span></li>
+</ul>
+</main>
 </div>
-
-<h2>Looking for</h2>
-<p>An AI engineering role or a research internship. Thai (native), English (IELTS 7.5).</p>
-</div></main>
-<footer><div class="wrap">
-<a href="https://www.linkedin.com/in/tharakittikirati/">LinkedIn</a> &middot;
-<a href="https://github.com/Silicon-Melter">GitHub</a> &middot;
-<a href="https://huggingface.co/earth37815">Hugging Face</a> &middot;
-<a href="mailto:n.tharakittikirati@gmail.com">Email</a>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
 </div></footer>
 </body>
 </html>
