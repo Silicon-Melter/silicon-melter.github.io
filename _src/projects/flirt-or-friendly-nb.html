@@ -1,53 +1,138 @@
 title: Flirt or friendly? Naive Bayes from scratch
-description: A Multinomial Naive Bayes text classifier written from scratch in NumPy, and what text cleaning does to its results.
+description: A Multinomial Naive Bayes text classifier written from scratch, with a team of three, and what text cleaning can and cannot do for it.
 nav: projects
-date: 2026-02
+date: 2026-03
 when: 2026
 code: https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch
 card: A text classifier written in NumPy, and how text cleaning shapes what it can notice.
 thumb: /assets/thumbs/naive-bayes.svg
 ---
 <h1>Flirt or friendly? Naive Bayes from scratch</h1>
-<p class="meta">Feb 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
-<p class="lead">Can a simple statistical model tell a flirty message from a friendly one? I wrote a Multinomial Naive Bayes classifier from scratch to find out, and learned that how you prepare the text matters as much as the model.</p>
+<p class="meta">Mar 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Team of three &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
+<p class="lead">"I'm falling in love with you, my friend." Flirty or friendly? Face to face you would know from the tone of voice and body language. In a text message none of that is there, and even people get it wrong. For our AI course project we asked whether one of the simplest models in machine learning could learn the difference, and wrote it from scratch to find out.</p>
+<p>This was group work with my classmates Paveetas and Phuvit, for the course taught by Bee-ing Sae-ang. We did the model, the experiments, a report and a class presentation together. Later I came back to the code on my own to check one result more carefully (the last section).</p>
 
-<h2>The model</h2>
-<p>Naive Bayes is one of the oldest ideas in machine learning. For each class (flirty or friendly) it counts how often every word appears in the training messages. To classify a new message it asks: given these words, which class makes them most likely? It is "naive" because it treats every word as independent of the others, which is wrong, but works surprisingly well.</p>
-<p>I wrote the training and prediction myself instead of calling a library:</p>
+<h2>Why such a simple model?</h2>
+<p>Large language models can read context very well, but they hide everything inside billions of parameters. We wanted to understand every number in our model. We looked at logistic regression and Multinomial Naive Bayes, and picked Naive Bayes because it is simple, fast, and needs nothing more than counting words and Bayes' rule.</p>
+
+<h2>How Naive Bayes decides, in one example</h2>
+<p>Here is the toy example we used in our presentation. Imagine a tiny training set where we have counted how often each word appears in flirty and in friendly messages:</p>
+<table>
+<tr><th>Word</th><th class="n">Count in flirty</th><th class="n">Count in friendly</th><th class="n">P(word | flirty)</th><th class="n">P(word | friendly)</th></tr>
+<tr><td>I'm</td><td class="n">10</td><td class="n">8</td><td class="n">0.122</td><td class="n">0.108</td></tr>
+<tr><td>falling</td><td class="n">12</td><td class="n">5</td><td class="n">0.146</td><td class="n">0.068</td></tr>
+<tr><td>in</td><td class="n">9</td><td class="n">10</td><td class="n">0.110</td><td class="n">0.135</td></tr>
+<tr><td>love</td><td class="n">14</td><td class="n">3</td><td class="n">0.171</td><td class="n">0.041</td></tr>
+<tr><td>with</td><td class="n">9</td><td class="n">12</td><td class="n">0.110</td><td class="n">0.162</td></tr>
+<tr><td>you</td><td class="n">15</td><td class="n">11</td><td class="n">0.183</td><td class="n">0.149</td></tr>
+<tr><td>my</td><td class="n">9</td><td class="n">10</td><td class="n">0.110</td><td class="n">0.135</td></tr>
+<tr><td>friend</td><td class="n">4</td><td class="n">15</td><td class="n">0.048</td><td class="n">0.203</td></tr>
+<tr><td><em>total</em></td><td class="n">82</td><td class="n">74</td><td></td><td></td></tr>
+</table>
+<p>Training is just this table. The <strong>likelihood</strong> of a word in a class is its count divided by the class total (10 / 82 = 0.122 for "I'm" in flirty). The <strong>prior</strong> is how common each class is: 82 / 156 = 0.526 for flirty and 0.474 for friendly.</p>
+<p>To classify a new message, "I'm in love with friend", multiply the prior by the likelihood of each of its words, once for each class:</p>
+<pre><code>flirty:   0.526 &times; 0.122 &times; 0.110 &times; 0.171 &times; 0.110 &times; 0.048 &asymp; 6.4 &times; 10&#8315;&#8310;
+friendly: 0.474 &times; 0.108 &times; 0.135 &times; 0.041 &times; 0.162 &times; 0.135 &times; 0.203 &asymp; 1.3 &times; 10&#8315;&#8310;</code></pre>
+<p>Flirty wins by about five times. "friend" pulls towards friendly, but "love" pulls harder. It is called <em>naive</em> because it treats every word as independent of the others, which is not true of language, but it makes the maths this simple.</p>
+<p>Two details make it work on real data, and we wrote both ourselves instead of calling a library:</p>
 <ul>
-<li><strong>Prior:</strong> how common each class is, as a log probability.</li>
-<li><strong>Likelihood:</strong> for each word, (count in class + 1) / (words in class + vocabulary size). The +1 (Laplace smoothing) stops a single unseen word from making a probability zero.</li>
-<li><strong>Prediction:</strong> add the log prior and the log likelihoods of the message's words, and pick the larger total. Working in logs avoids multiplying thousands of tiny numbers until they round to zero.</li>
+<li><strong>Laplace smoothing:</strong> we add 1 to every count, so a word that never appeared in one class does not make that whole product zero.</li>
+<li><strong>Logarithms:</strong> multiplying hundreds of small probabilities quickly gets smaller than a 64-bit float can hold, and rounds to zero. Taking logs turns the product into a sum (log(A &times; B) = log A + log B), so the numbers stay readable negative values instead.</li>
 </ul>
 
 <h2>The data</h2>
-<p>About 5,000 short chat messages labelled flirty (1) or friendly (0), from the <a href="https://huggingface.co/datasets/ieuniversity/flirty_or_not">Flirty or Not dataset</a> by IE University (reference project: <a href="https://github.com/alyssafrndz/Flirtation-analysis">alyssafrndz/Flirtation-analysis</a>). The data and its labels are theirs; the model and the cleaning experiments are mine. After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. I balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% for testing.</p>
+<p>About 5,000 short chat messages labelled flirty or friendly, from the <a href="https://huggingface.co/datasets/ieuniversity/flirty_or_not">Flirty or Not dataset</a> by IE University (reference project: <a href="https://github.com/alyssafrndz/Flirtation-analysis">alyssafrndz/Flirtation-analysis</a>). The data and its labels are theirs; the model and the experiments are ours. After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. We balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% (422 messages) for testing.</p>
 
-<h2>Cleaning the text: where most of the work went</h2>
-<p>Chat messages are messy, and a word-counting model only sees what you give it. Each step below changes which "words" exist:</p>
+<h2>First result, and the "down?" problem</h2>
+<p>Our first tokenizer simply split messages on spaces. On the 422 test messages it was right 77.5% of the time. Looking at what it got wrong, we noticed that punctuation stayed stuck to words: in "You down?", the model learned "down?" as a brand-new word, separate from "down", so the two never helped each other. The same happens with stretched words ("hiiiii" is not "hi") and slang ("ily" for "I love you").</p>
+<p>The interesting part is that stretched words and slang are not just noise. They might be exactly the signal: people stretch words and use slang more when they are being playful.</p>
+
+<h2>A custom tokenizer</h2>
+<p>So we wrote our own text cleaning. Each step changes which "words" the model gets to count:</p>
 <ol>
-<li>Lower-case everything, and expand contractions ("don't" &rarr; "do not").</li>
-<li>Remove punctuation.</li>
-<li><strong>Keep negation:</strong> join "not" or "never" to the next word ("not cute" &rarr; <code>NOT_cute</code>), so it does not count as "cute".</li>
-<li>Remove common stopwords ("the", "is").</li>
-<li><strong>Flag elongation:</strong> "heyyyy" becomes "hey" plus a <code>_elongated</code> token, because stretching words is a tone signal in itself.</li>
+<li>Lower-case everything, and expand contractions ("I'm" &rarr; "I am").</li>
+<li>Remove punctuation, so "down?" becomes "down".</li>
+<li>Remove common stopwords ("the", "a", "is").</li>
+<li><strong>Keep negation:</strong> join "not" or "never" to the next word, so "never done" becomes <code>NOT_done</code> and does not count as "done".</li>
+<li><strong>Flag stretched words:</strong> "Hiiiii" becomes "hi" plus an <code>_elongated</code> token.</li>
 <li><strong>Translate slang</strong> with a small dictionary ("wyd" &rarr; "what are you doing") and add a <code>_slang</code> token.</li>
-<li>Lemmatise verbs ("texting" &rarr; "text") so different forms count as one word.</li>
+<li>Lemmatise, so "flirting" and "flirted" both count as "flirt".</li>
 </ol>
-<h2>Results, and a surprise</h2>
-<p>I tested each version of the cleaning on the same 422 held-out messages, and again over 10 different random splits so one lucky split could not mislead me.</p>
 <table>
-<tr><th>Cleaning</th><th class="n">Accuracy</th><th class="n">Accuracy, 10 splits</th><th class="n">F1, 10 splits</th></tr>
-<tr><td>Lower case only</td><td class="n">74.6%</td><td class="n">74.4 &plusmn; 1.8%</td><td class="n">0.746</td></tr>
-<tr><td>Full first version (removes stopwords)</td><td class="n">73.2%</td><td class="n">71.3 &plusmn; 1.4%</td><td class="n">0.721</td></tr>
-<tr><td><strong>Final: keep stopwords, flag emoticons</strong></td><td class="n"><strong>77.3%</strong></td><td class="n"><strong>75.1 &plusmn; 1.7%</strong></td><td class="n"><strong>0.750</strong></td></tr>
+<tr><th>Message</th><th>What the model sees</th></tr>
+<tr><td>In fact I have never done as much as hug a girl?</td><td><code>fact NOT_done much hug girl</code></td></tr>
+<tr><td>wyd</td><td><code>what be you do _slang</code></td></tr>
+<tr><td>Hiiiii</td><td><code>hi _elongated</code></td></tr>
 </table>
-<p>My carefully built first pipeline did <em>worse</em> than just lower-casing the text. The culprit was stopword removal, a standard step that deletes small words like "you", "your" and "me". In chat those words carry the tone: "your", "me", "over" and "down" lean flirty, while "he" and "they" lean friendly. Keeping them, and turning emoticons into tokens before punctuation removal deleted them, gave the best model. <code>;)</code> appears in 41 messages, and every one is labelled flirty.</p>
-<p>The other steps (contractions, negation, stretched words, slang, lemmatising) each moved accuracy by less than the variation between splits. With about 2,100 messages, differences under two points are noise, which is the other lesson: measure over several splits before believing a change helped.</p>
+
+<h2>Results</h2>
+<figure>
+<svg viewBox="0 0 640 230" width="100%" role="img" aria-label="Two confusion matrices on 422 test messages. Simple tokenizer: 159 friendly and 168 flirty messages right, 57 friendly called flirty, 38 flirty called friendly. Custom tokenizer: 164 and 169 right, 52 and 37 wrong.">
+<text x="192" y="22" text-anchor="middle" font-weight="600">Simple tokenizer</text>
+<text x="140" y="46" text-anchor="middle" class="muted">said friendly</text>
+<text x="244" y="46" text-anchor="middle" class="muted">said flirty</text>
+<text x="82" y="94" text-anchor="end" class="muted">friendly</text>
+<text x="82" y="168" text-anchor="end" class="muted">flirty</text>
+<rect x="90" y="56" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.86"/><text x="140" y="98" text-anchor="middle" font-size="18" font-weight="600">159</text>
+<rect x="194" y="56" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.16"/><text x="244" y="98" text-anchor="middle" font-size="18" font-weight="600">57</text>
+<rect x="90" y="130" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.14"/><text x="140" y="172" text-anchor="middle" font-size="18" font-weight="600">38</text>
+<rect x="194" y="130" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.90"/><text x="244" y="172" text-anchor="middle" font-size="18" font-weight="600">168</text>
+<text x="512" y="22" text-anchor="middle" font-weight="600">Custom tokenizer</text>
+<text x="460" y="46" text-anchor="middle" class="muted">said friendly</text>
+<text x="564" y="46" text-anchor="middle" class="muted">said flirty</text>
+<text x="402" y="94" text-anchor="end" class="muted">friendly</text>
+<text x="402" y="168" text-anchor="end" class="muted">flirty</text>
+<rect x="410" y="56" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.88"/><text x="460" y="98" text-anchor="middle" font-size="18" font-weight="600">164</text>
+<rect x="514" y="56" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.16"/><text x="564" y="98" text-anchor="middle" font-size="18" font-weight="600">52</text>
+<rect x="410" y="130" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.13"/><text x="460" y="172" text-anchor="middle" font-size="18" font-weight="600">37</text>
+<rect x="514" y="130" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.90"/><text x="564" y="172" text-anchor="middle" font-size="18" font-weight="600">169</text>
+<text x="10" y="222" class="muted">rows: the true label &middot; columns: what the model said &middot; blue: correct</text>
+</svg>
+<figcaption>Confusion matrices on the same 422 test messages (216 friendly, 206 flirty), from our report.</figcaption>
+</figure>
+<table>
+<tr><th>Metric</th><th class="n">Simple tokenizer</th><th class="n">Custom tokenizer</th></tr>
+<tr><td>Accuracy (messages classified right)</td><td class="n">77.5%</td><td class="n"><strong>78.9%</strong></td></tr>
+<tr><td>Precision (said flirty, and was)</td><td class="n">74.7%</td><td class="n"><strong>76.5%</strong></td></tr>
+<tr><td>Recall (flirty messages caught)</td><td class="n">81.6%</td><td class="n"><strong>82.0%</strong></td></tr>
+<tr><td>Specificity (friendly messages kept friendly)</td><td class="n">73.6%</td><td class="n"><strong>75.9%</strong></td></tr>
+<tr><td>F1 score (balance of precision and recall)</td><td class="n">0.780</td><td class="n"><strong>0.792</strong></td></tr>
+</table>
+<p>The custom tokenizer was a little better on every metric, but only by about one point of accuracy, for a lot of work. Both versions catch flirty messages better than they recognise friendly ones: they would rather call a friendly message flirty than miss a flirty one.</p>
+
+<h2>Why it stopped at about 79%</h2>
+<p>Part of it may be the data: labelling intent is hard, and people would not always agree on these labels either. But we think the main limit is the "naive" part of the model itself. It only sees a bag of words, with no order:</p>
+<figure>
+<svg viewBox="0 0 640 150" width="100%" role="img" aria-label="Stop, I never love you and I never stop love you both become the same five words, so Naive Bayes gives them the same probability">
+<defs><marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<rect x="10" y="14" width="230" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="125" y="41" text-anchor="middle">"Stop, I never love you"</text>
+<rect x="10" y="88" width="230" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="125" y="115" text-anchor="middle">"I never stop love you"</text>
+<line x1="240" y1="36" x2="318" y2="66" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ahb)"/>
+<line x1="240" y1="110" x2="318" y2="82" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ahb)"/>
+<rect x="320" y="50" width="310" height="48" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="475" y="72" text-anchor="middle">{ I, never, stop, love, you }</text>
+<text x="475" y="90" text-anchor="middle" class="muted">same words, same probability</text>
+</svg>
+<figcaption>Opposite meanings, identical to Naive Bayes.</figcaption>
+</figure>
+<p>In machine learning terms the model has high bias and low variance: it trains very stably and rarely overfits, but it is too simple to capture meaning that lives in word combinations. Fixing that needs a model that looks at how words relate to each other, such as Transformer language models, whose attention mechanism weighs every word against every other word in the message.</p>
+
+<h2>Coming back to it: one split is not enough</h2>
+<p>A one-point gain on 422 messages bothered me, so in November 2026 I re-ran every version of the cleaning over 10 different random train/test splits instead of one. The picture changed:</p>
+<table>
+<tr><th>Cleaning</th><th class="n">Accuracy, 10 splits</th><th class="n">F1, 10 splits</th></tr>
+<tr><td>Lower case only</td><td class="n">74.4 &plusmn; 1.8%</td><td class="n">0.746</td></tr>
+<tr><td>Full custom tokenizer (removes stopwords)</td><td class="n">71.3 &plusmn; 1.4%</td><td class="n">0.721</td></tr>
+<tr><td><strong>Keep stopwords, flag emoticons</strong></td><td class="n"><strong>75.1 &plusmn; 1.7%</strong></td><td class="n"><strong>0.750</strong></td></tr>
+</table>
+<p>Averaged over many splits, the full custom tokenizer did <em>worse</em> than just lower-casing the text, and the gain we saw in the course came from one lucky split. The culprit was stopword removal, a standard step that deletes small words like "you", "your" and "me". In chat those words carry the tone: "your", "me", "over" and "down" lean flirty, while "he" and "they" lean friendly. Keeping them, and turning emoticons into tokens before punctuation removal deleted them, gave the best model. <code>;)</code> appears in 41 messages, and every one is labelled flirty.</p>
+<p>The other steps (contractions, negation, stretched words, slang, lemmatising) each moved accuracy by less than the variation between splits. With about 2,100 messages, differences under two points are noise.</p>
 
 <h2>What I learned</h2>
 <ul>
 <li>How a statistical model becomes a machine learning model: it is all counting and Bayes' rule, with smoothing and logs to make it work in practice.</li>
-<li>Data preparation shapes the output, and "standard" steps are not always right. Stopword lists were built for documents, not chat messages.</li>
-<li>Its limit: Naive Bayes sees a bag of words with no order or meaning. Modern language models use word embeddings, which place words with similar meanings close together. I looked into them but did not have time to implement them within the course.</li>
+<li>Look at the mistakes. The "down?" problem only showed up when we read what the model got wrong.</li>
+<li>"Standard" preprocessing is not always right. Stopword lists were built for documents, not chat messages, where "you" and "me" are the message.</li>
+<li>Measure over several splits before believing a small change helped. I would have kept the wrong conclusion if I had not checked.</li>
+<li>Where the simple model ends: a bag of words has no order or meaning, which is exactly what attention-based models add.</li>
 </ul>
