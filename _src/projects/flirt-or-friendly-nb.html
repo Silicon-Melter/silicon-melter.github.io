@@ -1,53 +1,281 @@
 title: Flirt or friendly? Naive Bayes from scratch
-description: A Multinomial Naive Bayes text classifier written from scratch in NumPy, and what text cleaning does to its results.
+description: A Multinomial Naive Bayes text classifier written from scratch, with a team of three, and what text cleaning can and cannot do for it.
 nav: projects
-date: 2026-02
+date: 2026-03
 when: 2026
 code: https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch
 card: A text classifier written in NumPy, and how text cleaning shapes what it can notice.
 thumb: /assets/thumbs/naive-bayes.svg
 ---
+<style>.eq{background:var(--soft);border-radius:8px;padding:10px 14px;margin:6px 0 16px;overflow-x:auto;font-family:"Cambria Math",Cambria,Georgia,serif;font-size:16.5px}</style>
 <h1>Flirt or friendly? Naive Bayes from scratch</h1>
-<p class="meta">Feb 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
-<p class="lead">Can a simple statistical model tell a flirty message from a friendly one? I wrote a Multinomial Naive Bayes classifier from scratch to find out, and learned that how you prepare the text matters as much as the model.</p>
+<p class="meta">Mar 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Team of three &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
+<p class="lead">"I'm falling in love with you, my friend." Flirty or friendly? Face to face you would know from the tone of voice and body language. In a text message none of that is there, and even people get it wrong. For our AI course project we asked whether one of the simplest models in machine learning could learn the difference, and wrote it from scratch to find out.</p>
+<p>Naive Bayes is about the most basic language model there is: it just counts words. So the results are not impressive next to modern AI, and that was never the point. Building it from nothing gave me an intuition for what a language model actually has to learn, and why modern Transformer models are built the way they are. It was my starting point for that modern approach.</p>
+<p>This was group work with my classmates Paveetas and Phuvit, for the course taught by Bee-ing Sae-ang. We did the model, the experiments, a report and a class presentation together. Later I came back to the code on my own to check one result more carefully (the last section).</p>
 
-<h2>The model</h2>
-<p>Naive Bayes is one of the oldest ideas in machine learning. For each class (flirty or friendly) it counts how often every word appears in the training messages. To classify a new message it asks: given these words, which class makes them most likely? It is "naive" because it treats every word as independent of the others, which is wrong, but works surprisingly well.</p>
-<p>I wrote the training and prediction myself instead of calling a library:</p>
-<ul>
-<li><strong>Prior:</strong> how common each class is, as a log probability.</li>
-<li><strong>Likelihood:</strong> for each word, (count in class + 1) / (words in class + vocabulary size). The +1 (Laplace smoothing) stops a single unseen word from making a probability zero.</li>
-<li><strong>Prediction:</strong> add the log prior and the log likelihoods of the message's words, and pick the larger total. Working in logs avoids multiplying thousands of tiny numbers until they round to zero.</li>
-</ul>
+<h2>Why such a simple model?</h2>
+<p>Large language models can read context very well, but they hide everything inside billions of parameters. We wanted to understand every number in our model. We looked at logistic regression and Multinomial Naive Bayes, and picked Naive Bayes because it is simple, fast, and needs nothing more than counting words and Bayes' rule.</p>
+
+<h2>How Naive Bayes decides, in one example</h2>
+<p>Here is the toy example we used in our presentation. Imagine a tiny training set where we have counted how often each word appears in flirty and in friendly messages:</p>
+<table>
+<tr><th>Word</th><th class="n">Count in flirty</th><th class="n">Count in friendly</th><th class="n">P(word | flirty)</th><th class="n">P(word | friendly)</th></tr>
+<tr><td>I'm</td><td class="n">10</td><td class="n">8</td><td class="n">0.122</td><td class="n">0.108</td></tr>
+<tr><td>falling</td><td class="n">12</td><td class="n">5</td><td class="n">0.146</td><td class="n">0.068</td></tr>
+<tr><td>in</td><td class="n">9</td><td class="n">10</td><td class="n">0.110</td><td class="n">0.135</td></tr>
+<tr><td>love</td><td class="n">14</td><td class="n">3</td><td class="n">0.171</td><td class="n">0.041</td></tr>
+<tr><td>with</td><td class="n">9</td><td class="n">12</td><td class="n">0.110</td><td class="n">0.162</td></tr>
+<tr><td>you</td><td class="n">15</td><td class="n">11</td><td class="n">0.183</td><td class="n">0.149</td></tr>
+<tr><td>my</td><td class="n">9</td><td class="n">10</td><td class="n">0.110</td><td class="n">0.135</td></tr>
+<tr><td>friend</td><td class="n">4</td><td class="n">15</td><td class="n">0.048</td><td class="n">0.203</td></tr>
+<tr><td><em>total</em></td><td class="n">82</td><td class="n">74</td><td></td><td></td></tr>
+</table>
+<p>Training is just this table. The <strong>likelihood</strong> of a word in a class is its count divided by the class total (10 / 82 = 0.122 for "I'm" in flirty). The <strong>prior</strong> is how common each class is: 82 / 156 = 0.526 for flirty and 0.474 for friendly.</p>
+<p>To classify a new message, "I'm in love with friend", multiply the prior by the likelihood of each of its words, once for each class:</p>
+<pre><code>flirty:   0.526 &times; 0.122 &times; 0.110 &times; 0.171 &times; 0.110 &times; 0.048 &asymp; 6.4 &times; 10&#8315;&#8310;
+friendly: 0.474 &times; 0.108 &times; 0.135 &times; 0.041 &times; 0.162 &times; 0.135 &times; 0.203 &asymp; 1.3 &times; 10&#8315;&#8310;</code></pre>
+<p>Flirty wins by about five times. "friend" pulls towards friendly, but "love" pulls harder. It is called <em>naive</em> because it treats every word as independent of the others, which is not true of language, but it makes the maths this simple.</p>
+<h3>The maths behind it</h3>
+<p>The toy example skips three things that matter on real data. Here is the full reasoning, step by step.</p>
+<p><strong>1. Bayes' rule.</strong> We want the probability of a class <i>c</i> (flirty or friendly) given a message <i>d</i>:</p>
+<div class="eq">P(<i>c</i> | <i>d</i>) = P(<i>d</i> | <i>c</i>) &middot; P(<i>c</i>) / P(<i>d</i>)</div>
+<p>P(<i>d</i>), the chance of seeing this exact message at all, is the same for both classes, so to pick a winner we only need to compare P(<i>d</i> | <i>c</i>) &middot; P(<i>c</i>).</p>
+<p><strong>2. The naive assumption.</strong> A message is a list of words <i>w</i><sub>1</sub> &hellip; <i>w</i><sub>n</sub>. If we pretend each word is independent of the others, the probability of the whole message is the product of the word probabilities:</p>
+<div class="eq">P(<i>d</i> | <i>c</i>) = P(<i>w</i><sub>1</sub> | <i>c</i>) &times; P(<i>w</i><sub>2</sub> | <i>c</i>) &times; &hellip; &times; P(<i>w</i><sub>n</sub> | <i>c</i>)</div>
+<p><strong>3. Laplace smoothing.</strong> Each word probability comes from counting, with 1 added to every count:</p>
+<div class="eq">P(<i>w</i> | <i>c</i>) = (count of <i>w</i> in class <i>c</i> + 1) / (all words in class <i>c</i> + vocabulary size)</div>
+<p>Without the +1, a word that never appeared in friendly training messages would get probability 0, and one zero wipes out the whole product, however friendly the rest of the message is. In our trained model the vocabulary is 2,615 words, so even an unseen pairing gets a small but non-zero probability.</p>
+<p><strong>4. Why logarithms.</strong> Word probabilities are small: in our model "you", the most common word, has P = 0.036 in flirty messages, and most words are below 0.001. Multiply a lot of them and the result shrinks very fast. The longest message in our dataset has 138 words the model knows; the product of their probabilities is about 10<sup>&minus;428</sup>. A 64-bit float cannot go below about 10<sup>&minus;308</sup> (10<sup>&minus;324</sup> with denormals), so the computer stores both classes' scores as exactly 0, and the model cannot tell them apart. This is called <em>underflow</em>.</p>
+<p>The fix is to take the logarithm. Because log(<i>a</i> &times; <i>b</i>) = log <i>a</i> + log <i>b</i>, the product becomes a sum of negative numbers of a normal size. For that 138-word message the score becomes about &minus;986 instead of 0. And because log only ever goes up when its input goes up, the class with the larger product is still the class with the larger log score, so the answer does not change. The model we wrote computes:</p>
+<div class="eq">score(<i>c</i>) = log P(<i>c</i>) + log P(<i>w</i><sub>1</sub> | <i>c</i>) + &hellip; + log P(<i>w</i><sub>n</sub> | <i>c</i>)</div>
+<p>and predicts the class with the higher score.</p>
+<p><strong>5. Why each word "pushes".</strong> Subtract the two scores and the terms pair up:</p>
+<div class="eq">score(flirty) &minus; score(friendly) = log [P(flirty) / P(friendly)] + &Sigma;<sub><i>i</i></sub> log [P(<i>w<sub>i</sub></i> | flirty) / P(<i>w<sub>i</sub></i> | friendly)]</div>
+<p>The decision is the prior ratio plus one term per word. A word whose ratio is above 1 pushes towards flirty, below 1 towards friendly, and the further from 1, the harder it pushes. That ratio is what the word lists further down are ranked by.</p>
+<p><strong>A real example.</strong> "heyyyy cutie, you down? ;)" becomes <code>hey _elongated cutie you down wink</code> after cleaning. "cutie" never appeared in training, so the model skips it. The other five words give:</p>
+<table>
+<tr><th>Word</th><th class="n">P(word | flirty)</th><th class="n">P(word | friendly)</th><th class="n">Ratio</th></tr>
+<tr><td>hey</td><td class="n">0.0020</td><td class="n">0.0012</td><td class="n">1.8</td></tr>
+<tr><td>_elongated</td><td class="n">0.0034</td><td class="n">0.0014</td><td class="n">2.5</td></tr>
+<tr><td>you</td><td class="n">0.0363</td><td class="n">0.0183</td><td class="n">2.0</td></tr>
+<tr><td>down</td><td class="n">0.0016</td><td class="n">0.0004</td><td class="n">4.1</td></tr>
+<tr><td>wink (from ;))</td><td class="n">0.0042</td><td class="n">0.0001</td><td class="n">43</td></tr>
+</table>
+<p>With the priors (849 flirty and 839 friendly training messages), the log scores are &minus;27.8 for flirty and &minus;35.2 for friendly, so the model says flirty. Every word leaned the same way, and the winking emoticon did most of the work.</p>
+
+<h3>Try it yourself</h3>
+<p>This is our trained model running in your browser: the same word counts, the same cleaning steps (ported to JavaScript, giving the same tokens as the Python code on all 4,979 messages in the dataset). Type a message and watch each word's likelihood in both classes, and how hard it pushes the verdict. Nothing you type leaves your browser.</p>
+<style>
+.ff{border:1px solid var(--line);border-radius:10px;padding:16px;margin:18px 0 24px;background:var(--soft)}
+.ff-label{display:block;color:var(--muted);font-size:13.5px;margin-bottom:4px}
+.ff textarea{box-sizing:border-box;width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:vertical}
+.ff textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.ff-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 14px}
+.ff-ex .ff-label{display:inline;margin:0 2px 0 0}
+.ff button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:3px 10px;cursor:pointer}
+.ff button:hover,.ff button:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+.ff-ends{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.ff-pct{color:var(--fg);font-weight:650;font-variant-numeric:tabular-nums}
+.ff-track{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--bar1),var(--line) 50%,var(--accent));margin-top:4px}
+.ff-mid{position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--muted)}
+.ff-needle{position:absolute;top:-6px;width:6px;height:26px;margin-left:-3px;border-radius:3px;background:var(--fg);left:50%;transition:left .6s cubic-bezier(.3,1.4,.5,1)}
+.ff-score{font-size:13.5px;color:var(--muted);margin:10px 0 6px;font-variant-numeric:tabular-nums}
+.ff-pipe{margin:4px 0 12px;font-size:14px}
+.ff-pipe summary{cursor:pointer;color:var(--muted)}
+.ff-toks code,.ff-steps code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:13px}
+.ff-steps{margin:8px 0 0;padding-left:22px}
+.ff-steps li{margin:2px 0}
+.ff-steps .k{color:var(--muted);display:inline-block;min-width:150px}
+.ff-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin:6px 0 8px}
+.ff-legend .ff-unit{margin-left:auto}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.sw.fl{background:var(--accent)} .sw.fr{background:var(--bar1)}
+.ff-bars{display:grid;gap:8px}
+.ff-row{display:grid;grid-template-columns:minmax(64px,110px) minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:13.5px;opacity:0;transform:translateY(4px);animation:ffin .35s forwards}
+@keyframes ffin{to{opacity:1;transform:none}}
+.ff-w{font-weight:600;overflow-wrap:anywhere;line-height:1.3}
+.ff-pair{display:grid;gap:3px}
+.ff-b{display:flex;align-items:center;gap:6px}
+.ff-b i{display:block;height:9px;border-radius:3px;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.ff-b.fl i{background:var(--accent)} .ff-b.fr i{background:var(--bar1)}
+.ff-b span{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ff-push{font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums;line-height:1.3}
+.ff-push.fl{color:var(--accent)} .ff-push.fr{color:var(--muted)}
+.ff-row.skip{grid-template-columns:minmax(64px,110px) minmax(0,1fr)}
+.ff-row.skip .ff-w{color:var(--muted);font-weight:500;text-decoration:line-through}
+.ff-row.skip .ff-pair{color:var(--muted);font-size:12.5px}
+@media (max-width:480px){.ff-row{grid-template-columns:72px minmax(0,1fr) 70px;gap:8px}}
+@media (prefers-reduced-motion:reduce){.ff-needle,.ff-b i{transition:none}.ff-row{animation:none;opacity:1;transform:none}}
+</style>
+<div class="ff" id="ff">
+<label for="ff-in" class="ff-label">Type a message</label>
+<textarea id="ff-in" rows="2" maxlength="280" spellcheck="false">heyyyy cutie, you down? ;)</textarea>
+<div class="ff-ex"><span class="ff-label">or try</span>
+<button type="button">Hey ;) wyd tonight?</button><button type="button">I'm not going to the party, sorry</button><button type="button">what are you studying at uni?</button><button type="button">Can you send me the notes from class?</button>
+</div>
+<div class="ff-verdict">
+<div class="ff-ends"><span>friendly</span><span class="ff-pct"></span><span>flirty</span></div>
+<div class="ff-track"><div class="ff-mid"></div><div class="ff-needle"></div></div>
+<p class="ff-score"></p>
+</div>
+<details class="ff-pipe"><summary>What the model sees: <span class="ff-toks"></span></summary><ol class="ff-steps"></ol></details>
+<div class="ff-legend"><span><i class="sw fl"></i>P(word | flirty)</span><span><i class="sw fr"></i>P(word | friendly)</span><span class="ff-unit">per 1,000 words</span></div>
+<div class="ff-bars" aria-live="polite"></div>
+</div>
+<noscript><p class="note">The demo needs JavaScript.</p></noscript>
+<script src="/assets/flirt-or-friendly/model.js" defer></script>
+<script src="/assets/flirt-or-friendly/clean.js" defer></script>
+<script src="/assets/flirt-or-friendly/demo.js" defer></script>
+<p class="note">Bars use the smoothed likelihoods, shown per 1,000 words. Words the model never saw in training are skipped, as in the Python code. Do not expect too much from it: it is right about 75% of the time, and "Why it stopped at about 79%" below explains why.</p>
 
 <h2>The data</h2>
-<p>About 5,000 short chat messages labelled flirty (1) or friendly (0), from the <a href="https://huggingface.co/datasets/ieuniversity/flirty_or_not">Flirty or Not dataset</a> by IE University (reference project: <a href="https://github.com/alyssafrndz/Flirtation-analysis">alyssafrndz/Flirtation-analysis</a>). The data and its labels are theirs; the model and the cleaning experiments are mine. After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. I balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% for testing.</p>
+<p>About 5,000 short chat messages labelled flirty or friendly, from the <a href="https://huggingface.co/datasets/ieuniversity/flirty_or_not">Flirty or Not dataset</a> by IE University (reference project: <a href="https://github.com/alyssafrndz/Flirtation-analysis">alyssafrndz/Flirtation-analysis</a>). The data and its labels are theirs; the model and the experiments are ours. After removing empty rows and duplicates, 3,308 were left: 2,253 friendly and 1,055 flirty. We balanced the classes by dropping friendly messages at random (1,055 each), so the model could not score well just by always guessing "friendly", then held out 20% (422 messages) for testing.</p>
 
-<h2>Cleaning the text: where most of the work went</h2>
-<p>Chat messages are messy, and a word-counting model only sees what you give it. Each step below changes which "words" exist:</p>
+<h2>First result, and the "down?" problem</h2>
+<p>Our first tokenizer simply split messages on spaces. On the 422 test messages it was right 77.5% of the time. Looking at what it got wrong, we noticed that punctuation stayed stuck to words: in "You down?", the model learned "down?" as a brand-new word, separate from "down", so the two never helped each other. The same happens with stretched words ("hiiiii" is not "hi") and slang ("ily" for "I love you").</p>
+<p>The interesting part is that stretched words and slang are not just noise. They might be exactly the signal: people stretch words and use slang more when they are being playful.</p>
+
+<h2>A custom tokenizer</h2>
+<p>So we wrote our own text cleaning. Each step changes which "words" the model gets to count:</p>
 <ol>
-<li>Lower-case everything, and expand contractions ("don't" &rarr; "do not").</li>
-<li>Remove punctuation.</li>
-<li><strong>Keep negation:</strong> join "not" or "never" to the next word ("not cute" &rarr; <code>NOT_cute</code>), so it does not count as "cute".</li>
-<li>Remove common stopwords ("the", "is").</li>
-<li><strong>Flag elongation:</strong> "heyyyy" becomes "hey" plus a <code>_elongated</code> token, because stretching words is a tone signal in itself.</li>
+<li>Lower-case everything, and expand contractions ("I'm" &rarr; "I am").</li>
+<li>Remove punctuation, so "down?" becomes "down".</li>
+<li>Remove common stopwords ("the", "a", "is").</li>
+<li><strong>Keep negation:</strong> join "not" or "never" to the next word, so "never done" becomes <code>NOT_done</code> and does not count as "done".</li>
+<li><strong>Flag stretched words:</strong> "Hiiiii" becomes "hi" plus an <code>_elongated</code> token.</li>
 <li><strong>Translate slang</strong> with a small dictionary ("wyd" &rarr; "what are you doing") and add a <code>_slang</code> token.</li>
-<li>Lemmatise verbs ("texting" &rarr; "text") so different forms count as one word.</li>
+<li>Lemmatise, so "flirting" and "flirted" both count as "flirt".</li>
 </ol>
-<h2>Results, and a surprise</h2>
-<p>I tested each version of the cleaning on the same 422 held-out messages, and again over 10 different random splits so one lucky split could not mislead me.</p>
 <table>
-<tr><th>Cleaning</th><th class="n">Accuracy</th><th class="n">Accuracy, 10 splits</th><th class="n">F1, 10 splits</th></tr>
-<tr><td>Lower case only</td><td class="n">74.6%</td><td class="n">74.4 &plusmn; 1.8%</td><td class="n">0.746</td></tr>
-<tr><td>Full first version (removes stopwords)</td><td class="n">73.2%</td><td class="n">71.3 &plusmn; 1.4%</td><td class="n">0.721</td></tr>
-<tr><td><strong>Final: keep stopwords, flag emoticons</strong></td><td class="n"><strong>77.3%</strong></td><td class="n"><strong>75.1 &plusmn; 1.7%</strong></td><td class="n"><strong>0.750</strong></td></tr>
+<tr><th>Message</th><th>What the model sees</th></tr>
+<tr><td>In fact I have never done as much as hug a girl?</td><td><code>fact NOT_done much hug girl</code></td></tr>
+<tr><td>wyd</td><td><code>what be you do _slang</code></td></tr>
+<tr><td>Hiiiii</td><td><code>hi _elongated</code></td></tr>
 </table>
-<p>My carefully built first pipeline did <em>worse</em> than just lower-casing the text. The culprit was stopword removal, a standard step that deletes small words like "you", "your" and "me". In chat those words carry the tone: "your", "me", "over" and "down" lean flirty, while "he" and "they" lean friendly. Keeping them, and turning emoticons into tokens before punctuation removal deleted them, gave the best model. <code>;)</code> appears in 41 messages, and every one is labelled flirty.</p>
-<p>The other steps (contractions, negation, stretched words, slang, lemmatising) each moved accuracy by less than the variation between splits. With about 2,100 messages, differences under two points are noise, which is the other lesson: measure over several splits before believing a change helped.</p>
+
+<h2>Results</h2>
+<figure>
+<svg viewBox="0 0 640 230" width="100%" role="img" aria-label="Two confusion matrices on 422 test messages. Simple tokenizer: 159 friendly and 168 flirty messages right, 57 friendly called flirty, 38 flirty called friendly. Custom tokenizer: 164 and 169 right, 52 and 37 wrong.">
+<text x="192" y="22" text-anchor="middle" font-weight="600">Simple tokenizer</text>
+<text x="140" y="46" text-anchor="middle" class="muted">said friendly</text>
+<text x="244" y="46" text-anchor="middle" class="muted">said flirty</text>
+<text x="82" y="94" text-anchor="end" class="muted">friendly</text>
+<text x="82" y="168" text-anchor="end" class="muted">flirty</text>
+<rect x="90" y="56" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.86"/><text x="140" y="98" text-anchor="middle" font-size="18" font-weight="600">159</text>
+<rect x="194" y="56" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.16"/><text x="244" y="98" text-anchor="middle" font-size="18" font-weight="600">57</text>
+<rect x="90" y="130" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.14"/><text x="140" y="172" text-anchor="middle" font-size="18" font-weight="600">38</text>
+<rect x="194" y="130" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.90"/><text x="244" y="172" text-anchor="middle" font-size="18" font-weight="600">168</text>
+<text x="512" y="22" text-anchor="middle" font-weight="600">Custom tokenizer</text>
+<text x="460" y="46" text-anchor="middle" class="muted">said friendly</text>
+<text x="564" y="46" text-anchor="middle" class="muted">said flirty</text>
+<text x="402" y="94" text-anchor="end" class="muted">friendly</text>
+<text x="402" y="168" text-anchor="end" class="muted">flirty</text>
+<rect x="410" y="56" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.88"/><text x="460" y="98" text-anchor="middle" font-size="18" font-weight="600">164</text>
+<rect x="514" y="56" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.16"/><text x="564" y="98" text-anchor="middle" font-size="18" font-weight="600">52</text>
+<rect x="410" y="130" width="100" height="70" rx="4" fill="var(--muted)" fill-opacity="0.13"/><text x="460" y="172" text-anchor="middle" font-size="18" font-weight="600">37</text>
+<rect x="514" y="130" width="100" height="70" rx="4" fill="var(--accent)" fill-opacity="0.90"/><text x="564" y="172" text-anchor="middle" font-size="18" font-weight="600">169</text>
+<text x="10" y="222" class="muted">rows: the true label &middot; columns: what the model said &middot; blue: correct</text>
+</svg>
+<figcaption>Confusion matrices on the same 422 test messages (216 friendly, 206 flirty), from our report.</figcaption>
+</figure>
+<table>
+<tr><th>Metric</th><th class="n">Simple tokenizer</th><th class="n">Custom tokenizer</th></tr>
+<tr><td>Accuracy (messages classified right)</td><td class="n">77.5%</td><td class="n"><strong>78.9%</strong></td></tr>
+<tr><td>Precision (said flirty, and was)</td><td class="n">74.7%</td><td class="n"><strong>76.5%</strong></td></tr>
+<tr><td>Recall (flirty messages caught)</td><td class="n">81.6%</td><td class="n"><strong>82.0%</strong></td></tr>
+<tr><td>Specificity (friendly messages kept friendly)</td><td class="n">73.6%</td><td class="n"><strong>75.9%</strong></td></tr>
+<tr><td>F1 score (balance of precision and recall)</td><td class="n">0.780</td><td class="n"><strong>0.792</strong></td></tr>
+</table>
+<p>The custom tokenizer was a little better on every metric, but only by about one point of accuracy, for a lot of work. Both versions catch flirty messages better than they recognise friendly ones: they would rather call a friendly message flirty than miss a flirty one.</p>
+
+<h2>Why it stopped at about 79%</h2>
+<p>Part of it may be the data: labelling intent is hard, and people would not always agree on these labels either. But we think the main limit is the "naive" part of the model itself. It only sees a bag of words, with no order:</p>
+<figure>
+<svg viewBox="0 0 640 150" width="100%" role="img" aria-label="Stop, I never love you and I never stop love you both become the same five words, so Naive Bayes gives them the same probability">
+<defs><marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<rect x="10" y="14" width="230" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="125" y="41" text-anchor="middle">"Stop, I never love you"</text>
+<rect x="10" y="88" width="230" height="44" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="125" y="115" text-anchor="middle">"I never stop love you"</text>
+<line x1="240" y1="36" x2="318" y2="66" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ahb)"/>
+<line x1="240" y1="110" x2="318" y2="82" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ahb)"/>
+<rect x="320" y="50" width="310" height="48" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="475" y="72" text-anchor="middle">{ I, never, stop, love, you }</text>
+<text x="475" y="90" text-anchor="middle" class="muted">same words, same probability</text>
+</svg>
+<figcaption>Opposite meanings, identical to Naive Bayes.</figcaption>
+</figure>
+<p>In machine learning terms the model has high bias and low variance: it trains very stably and rarely overfits, but it is too simple to capture meaning that lives in word combinations. Fixing that needs a model that looks at how words relate to each other, such as Transformer language models, whose attention mechanism weighs every word against every other word in the message.</p>
+
+<h2>Coming back to it: one split is not enough</h2>
+<p>A one-point gain on 422 messages bothered me, so in November 2026 I re-ran every version of the cleaning over 10 different random train/test splits instead of one. The picture changed:</p>
+<table>
+<tr><th>Cleaning</th><th class="n">Accuracy, 10 splits</th><th class="n">F1, 10 splits</th></tr>
+<tr><td>Lower case only</td><td class="n">74.4 &plusmn; 1.8%</td><td class="n">0.746</td></tr>
+<tr><td>Full custom tokenizer (removes stopwords)</td><td class="n">71.3 &plusmn; 1.4%</td><td class="n">0.721</td></tr>
+<tr><td><strong>Keep stopwords, flag emoticons</strong></td><td class="n"><strong>75.1 &plusmn; 1.7%</strong></td><td class="n"><strong>0.750</strong></td></tr>
+</table>
+<p>Averaged over many splits, the full custom tokenizer did <em>worse</em> than just lower-casing the text, and the gain we saw in the course came from one lucky split. The culprit was stopword removal, a standard step that deletes small words like "you", "your" and "me". In chat those words carry the tone: "your", "me", "over" and "down" lean flirty, while "he" and "they" lean friendly. Keeping them, and turning emoticons into tokens before punctuation removal deleted them, gave the best model. <code>;)</code> appears in 41 messages, and every one is labelled flirty.</p>
+<p>The other steps (contractions, negation, stretched words, slang, lemmatising) each moved accuracy by less than the variation between splits. With about 2,100 messages, differences under two points are noise.</p>
+
+<h2>Which words give a message away?</h2>
+<p>In our presentation we showed the "flirtiest" and "friendliest" words. Here is how to measure that, using the final model from the repo. For every word, divide how likely it is in a flirty message by how likely it is in a friendly one, using the same smoothed likelihoods the model uses: P(word | flirty) / P(word | friendly). A ratio of 10 means that seeing the word multiplies the odds of "flirty" by 10. This ratio is exactly how hard each word pushes the model's decision, so the words at the top of these lists are the ones that drive its predictions. I kept only words seen at least 8 times, because a word seen twice can get a huge ratio by luck.</p>
+<figure>
+<style>
+.ratios h3{font-size:15px;margin:18px 0 6px}
+.ratios ol{list-style:none;margin:0;padding:0}
+.ratios li{display:grid;grid-template-columns:minmax(70px,120px) minmax(0,1fr) 54px;gap:10px;align-items:center;margin:0 0 4px;font-size:14px}
+.ratios .w{text-align:right;line-height:1.3}
+.ratios .rb{display:flex;align-items:center;gap:6px;min-width:0}
+.ratios .rb i{display:block;height:12px;border-radius:3px;flex:none}
+.ratios .rb i.fl{background:var(--bar2)} .ratios .rb i.fr{background:var(--bar1)}
+.ratios .rb b{font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.ratios .c{color:var(--muted);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.ratios .hd{color:var(--muted);font-size:12.5px}
+</style>
+<div class="ratios">
+<h3>Most flirty: times more likely in a flirty message</h3>
+<ol>
+<li><span class="w">wink (;) 😉)</span><span class="rb"><i class="fl" style="width:96.4%"></i><b>&times;43</b></span><span class="c">44 / 0</span></li>
+<li><span class="w">kiss</span><span class="rb"><i class="fl" style="width:47.1%"></i><b>&times;21</b></span><span class="c">21 / 0</span></li>
+<li><span class="w">heart</span><span class="rb"><i class="fl" style="width:44.9%"></i><b>&times;20</b></span><span class="c">20 / 0</span></li>
+<li><span class="w">baby</span><span class="rb"><i class="fl" style="width:34.2%"></i><b>&times;15</b></span><span class="c">15 / 0</span></li>
+<li><span class="w">smile</span><span class="rb"><i class="fl" style="width:30.0%"></i><b>&times;14</b></span><span class="c">13 / 0</span></li>
+<li><span class="w">inside</span><span class="rb"><i class="fl" style="width:27.8%"></i><b>&times;12</b></span><span class="c">12 / 0</span></li>
+<li><span class="w">send</span><span class="rb"><i class="fl" style="width:25.8%"></i><b>&times;12</b></span><span class="c">11 / 0</span></li>
+<li><span class="w">bed</span><span class="rb"><i class="fl" style="width:23.6%"></i><b>&times;11</b></span><span class="c">10 / 0</span></li>
+<li><span class="w">hold</span><span class="rb"><i class="fl" style="width:23.6%"></i><b>&times;11</b></span><span class="c">10 / 0</span></li>
+<li><span class="w">eye</span><span class="rb"><i class="fl" style="width:21.3%"></i><b>&times;10</b></span><span class="c">9 / 0</span></li>
+</ol>
+<h3>Most friendly: times more likely in a friendly message</h3>
+<ol>
+<li><span class="w">school</span><span class="rb"><i class="fr" style="width:32.2%"></i><b>&times;14</b></span><span class="c">0 / 13</span></li>
+<li><span class="w">year</span><span class="rb"><i class="fr" style="width:22.0%"></i><b>&times;10</b></span><span class="c">1 / 18</span></li>
+<li><span class="w">kind (of)</span><span class="rb"><i class="fr" style="width:21.6%"></i><b>&times;10</b></span><span class="c">2 / 27</span></li>
+<li><span class="w">week</span><span class="rb"><i class="fr" style="width:20.7%"></i><b>&times;9</b></span><span class="c">0 / 8</span></li>
+<li><span class="w">nah</span><span class="rb"><i class="fr" style="width:20.7%"></i><b>&times;9</b></span><span class="c">0 / 8</span></li>
+<li><span class="w">he</span><span class="rb"><i class="fr" style="width:20.7%"></i><b>&times;9</b></span><span class="c">1 / 17</span></li>
+<li><span class="w">listen</span><span class="rb"><i class="fr" style="width:18.4%"></i><b>&times;8</b></span><span class="c">1 / 15</span></li>
+<li><span class="w">hear</span><span class="rb"><i class="fr" style="width:16.2%"></i><b>&times;7</b></span><span class="c">1 / 13</span></li>
+<li><span class="w">hahaha</span><span class="rb"><i class="fr" style="width:14.9%"></i><b>&times;7</b></span><span class="c">1 / 12</span></li>
+<li><span class="w">melbourne</span><span class="rb"><i class="fr" style="width:13.8%"></i><b>&times;6</b></span><span class="c">1 / 11</span></li>
+</ol>
+</div>
+<figcaption>Likelihood ratios from the trained model (seed 1), for words seen at least 8 times in the 1,688 training messages. The numbers on the right count how often each word appeared in flirty / friendly training messages. Seven explicit words were removed from the flirty list.</figcaption>
+</figure>
+<p>What the lists say:</p>
+<ul>
+<li><strong>Flirty messages are about the two people talking.</strong> Emoticons, "baby", "hold", "bed", "inside", and also small words: "your" is 4.9 times more likely in a flirty message and "me" 3.7 times. That is why removing stopwords hurt.</li>
+<li><strong>Friendly messages are about everything else:</strong> school, the year, the week, and other people ("he" is 9 times more likely in a friendly message, "they" 5 times).</li>
+<li><strong>The model also learns the dataset, not only flirting.</strong> "melbourne" is a friendly word, and the slang list needed words like "uni" and "maccas", because many of these chats come from Australian students. On messages from another country or age group, some of these clues would not hold.</li>
+<li><strong>The flirty side is explicit.</strong> 7 of the 20 most flirty words are sexual, so I left them out of the chart. A model trained on this data will call almost any physical word flirty, which is a limit of the data as much as of the model.</li>
+</ul>
+<p class="note">This chart also showed me a small bug: removing punctuation strips the underscore from the emoticon tags, so 😘 and the word "kiss" end up as the same token. It only merges a few tokens, but it is on my list to fix.</p>
 
 <h2>What I learned</h2>
 <ul>
 <li>How a statistical model becomes a machine learning model: it is all counting and Bayes' rule, with smoothing and logs to make it work in practice.</li>
-<li>Data preparation shapes the output, and "standard" steps are not always right. Stopword lists were built for documents, not chat messages.</li>
-<li>Its limit: Naive Bayes sees a bag of words with no order or meaning. Modern language models use word embeddings, which place words with similar meanings close together. I looked into them but did not have time to implement them within the course.</li>
+<li>Look at the mistakes. The "down?" problem only showed up when we read what the model got wrong.</li>
+<li>"Standard" preprocessing is not always right. Stopword lists were built for documents, not chat messages, where "you" and "me" are the message.</li>
+<li>Measure over several splits before believing a small change helped. I would have kept the wrong conclusion if I had not checked.</li>
+<li>Where the simple model ends, and where modern models start. A bag of words has no order or meaning, which is exactly what attention-based Transformer models add. Seeing exactly where counting words breaks down gave me the intuition to start on those models, the base of today&#39;s large language models.</li>
 </ul>
