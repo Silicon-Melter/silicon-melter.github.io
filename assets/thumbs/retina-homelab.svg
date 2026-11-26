@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" width="240" height="180"><style>
+.bg{fill:#eef1f4}.ln{stroke:#9aa3ad;fill:none}.mu{fill:#c3cad2}.ac{fill:#1f5fbf}.acs{stroke:#1f5fbf;fill:none}.acl{fill:#9dbbea}.ok{fill:#2e8b57}.tx{fill:#4a5560;font:600 11px -apple-system,Segoe UI,Roboto,sans-serif}
+@media (prefers-color-scheme:dark){.bg{fill:#22262a}.ln{stroke:#5b6066}.mu{fill:#454b52}.ac{fill:#82b1ff}.acs{stroke:#82b1ff}.acl{fill:#3c5a86}.ok{fill:#6fcf97}.tx{fill:#aeb6be}}
+</style><rect class="bg" width="240" height="180"/>
+<rect class="mu" x="16" y="70" width="34" height="20" rx="4"/><circle class="ac" cx="44" cy="80" r="5"/><rect class="mu" x="28" y="90" width="6" height="14"/>
+<path class="ln" d="M52 80 H80" stroke-width="2"/>
+<rect class="acl" x="82" y="64" width="44" height="32" rx="3"/><rect class="ac" x="90" y="72" width="12" height="12" rx="1"/><circle class="mu" cx="114" cy="74" r="3"/><circle class="mu" cx="114" cy="86" r="3"/>
+<path class="acs" d="M128 80 C150 80 150 80 170 80" stroke-width="2" stroke-dasharray="5 4"/>
+<rect class="mu" x="172" y="58" width="52" height="40" rx="3"/><rect class="acl" x="178" y="64" width="40" height="22" rx="1"/><rect class="mu" x="192" y="98" width="12" height="8"/>
+<rect class="mu" x="82" y="118" width="142" height="40" rx="6"/><circle class="ok" cx="98" cy="131" r="5"/><circle class="ok" cx="98" cy="146" r="5"/><rect class="bg" x="110" y="128" width="70" height="6" rx="3"/><rect class="bg" x="110" y="143" width="54" height="6" rx="3"/>
+<path class="ln" d="M104 96 V118" stroke-width="1.5" stroke-dasharray="3 3"/><path class="ln" d="M198 106 V118" stroke-width="1.5" stroke-dasharray="3 3"/>
+</svg>
