@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RETINA: clearing the road for ambulances from city CCTV · Noppawit Tharakittikirati</title>
+<meta name="description" content="A student proof of concept that turns Bangkok traffic cameras into anonymous lane counts, puts them on a map and a live traffic simulation, and plans an ambulance&#x27;s route and early green lights, without any video leaving the camera side.">
+<meta property="og:title" content="RETINA: clearing the road for ambulances from city CCTV · Noppawit Tharakittikirati">
+<meta property="og:description" content="A student proof of concept that turns Bangkok traffic cameras into anonymous lane counts, puts them on a map and a live traffic simulation, and plans an ambulance&#x27;s route and early green lights, without any video leaving the camera side.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="article">
+<header class="masthead"><div class="bar">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">About</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/Noppawit_Tharakittikirati_CV.pdf">CV</a></nav>
+</div></header>
+<div class="layout">
+<aside class="profile">
+<img class="avatar" src="/assets/img/profile.jpg" alt="Photo of Noppawit Tharakittikirati" width="160" height="160">
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
+<h1>RETINA: clearing the road for ambulances from city CCTV</h1>
+<p class="meta">Oct &ndash; Dec 2026 &middot; Advantech AIoT InnoWorks 2026, Smart City &middot; KMITL student team &middot; Python, PyTorch, D-FINE, SUMO, deck.gl, FastAPI</p>
+<p class="lead">Bangkok already has thousands of traffic cameras. RETINA is a proof of concept that uses them to help an ambulance: it counts the queue in each lane from a camera, puts those counts on a real map and into a traffic simulation, then picks the route that is easiest to clear and turns lights green just before the ambulance arrives. One rule shaped all of it: video never leaves the camera side, only anonymous counts and positions do.</p>
+
+<p class="note"><span class="todo">Your role:</span> which parts did you build yourself, and who else was on the team? The page says "we" until you tell me.</p>
+
+<h2>The problem</h2>
+<p>In Bangkok traffic, an ambulance can lose minutes in queues at signalised junctions, often in roads where other drivers have nowhere to move over to. Two kinds of help exist today. A police officer can switch a junction by hand, which depends on someone being there. Commercial pre-emption systems turn a light green when the ambulance gets close (in our tests, within 150 m), which helps but can be too late: the queue in front of the light is already there.</p>
+<p>A city that can see its queues could do better: start the green early enough to empty the queue before the ambulance reaches it, and choose a route around a blocked road in the first place. The hard part is seeing the queues without building a surveillance system.</p>
+
+<h2>How it fits together</h2>
+<figure>
+<svg viewBox="0 0 420 520" width="100%" style="max-width:460px;display:block;margin:0 auto" role="img" aria-label="Diagram: a traffic camera sends frames to the edge, the only place frames exist. The edge detects vehicles, maps them to lat/lon and lanes, and drops the frame. Only a small JSON observation goes out to the twin server, which runs a SUMO traffic simulation. The planner and a 3D viewer read per-road numbers from the twin.">
+<defs><marker id="ra" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<rect x="10" y="80" width="400" height="190" rx="10" style="fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4"/>
+<text x="24" y="102" class="muted">Edge: video stays here</text>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="135" y="14" width="150" height="44" rx="6"/>
+<rect x="30" y="118" width="110" height="56" rx="6"/>
+<rect x="155" y="118" width="110" height="56" rx="6"/>
+<rect x="280" y="118" width="110" height="56" rx="6"/>
+<rect x="135" y="204" width="150" height="44" rx="6" style="stroke-dasharray:3 3"/>
+<rect x="110" y="330" width="200" height="56" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="20" y="440" width="120" height="56" rx="6"/>
+<rect x="150" y="440" width="120" height="56" rx="6"/>
+<rect x="280" y="440" width="120" height="56" rx="6"/>
+</g>
+<text x="210" y="41" text-anchor="middle">Traffic camera</text>
+<text x="85" y="141" text-anchor="middle">Detect</text><text x="85" y="158" text-anchor="middle" class="muted">vehicles</text>
+<text x="210" y="141" text-anchor="middle">Map</text><text x="210" y="158" text-anchor="middle" class="muted">pixel to lat/lon</text>
+<text x="335" y="141" text-anchor="middle">Lanes</text><text x="335" y="158" text-anchor="middle" class="muted">count, queue</text>
+<text x="210" y="231" text-anchor="middle" class="muted">frame dropped</text>
+<text x="210" y="353" text-anchor="middle">Twin server</text><text x="210" y="370" text-anchor="middle" class="muted">SUMO traffic simulation</text>
+<text x="80" y="463" text-anchor="middle">Planner</text><text x="80" y="480" text-anchor="middle" class="muted">route, greens</text>
+<text x="210" y="463" text-anchor="middle">3D viewer</text><text x="210" y="480" text-anchor="middle" class="muted">deck.gl</text>
+<text x="340" y="463" text-anchor="middle">EMS apps</text><text x="340" y="480" text-anchor="middle" class="muted">dispatch</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ra)">
+<path d="M210,58V114"/>
+<path d="M140,146H151"/>
+<path d="M265,146H276"/>
+<path d="M335,174V226H289"/>
+<path d="M210,270V326"/>
+<path d="M170,386V412H80V436"/>
+<path d="M210,386V436"/>
+<path d="M250,386V412H340V436"/>
+</g>
+<rect x="222" y="287" width="150" height="20" rx="3" style="fill:var(--bg)"/>
+<text x="226" y="302" style="font-size:12px">observation (JSON) only</text>
+</svg>
+<figcaption>Video stops at the edge. What travels on is one small JSON message per second per camera: vehicle class, position and lane counts.</figcaption>
+</figure>
+<ol>
+<li><strong>Perception</strong> turns one camera's picture into a queue length per lane.</li>
+<li><strong>The map</strong> turns pixels into real-world positions, so a car in the image becomes a point on a street.</li>
+<li><strong>The twin</strong> is a traffic simulation of the area that is nudged to match what the cameras see.</li>
+<li><strong>The planner</strong> uses the twin to pick an ambulance's route and to time early green lights along it.</li>
+</ol>
+
+<h2>Perception: a queue length per lane</h2>
+<p>We worked from the public BMA (Bangkok Metropolitan Administration) traffic camera feed. It is low resolution (352 &times; 288 pixels) and updates about once per second, which is very different from the clean, sharp images that detection models are usually trained on. The main test camera looks at a busy junction on Rama VI Road.</p>
+<ul>
+<li><strong>Detection.</strong> A transformer-based object detector, D-FINE-X, finds cars, motorcycles, buses and trucks in each frame. We also fine-tuned it on VisDrone, a dataset of small vehicles seen from above, which raised its motorcycle accuracy (AP50 0.59 to 0.80 on our own labelled boxes).</li>
+<li><strong>Lanes and queues.</strong> Each vehicle's ground point is assigned to a hand-drawn lane. The queue is counted back from the stop line until the first gap longer than 5 m, which beat both a 10 m gap and a plain count of everything in the lane.</li>
+<li><strong>Speed.</strong> About 70 ms per frame end to end on an RTX 3060 Ti, well inside the one second between frames.</li>
+</ul>
+<p>Our pass bar was that the queue per lane is off by no more than 2 vehicles in 90 % of frames (the "P90 error"), against 153 frames we counted by hand. <strong>We have not met it yet.</strong> The best result is 4 / 2 / 4 / 3 vehicles for the four lanes, and the evening rush hour is the hardest case (up to about 6 vehicles off). Small, overlapping motorcycles in a 352-pixel image are the main reason. That is why the next part matters: the planner was tested with noise of this size added on purpose.</p>
+
+<h2>The map: from pixels to streets</h2>
+<p>A camera image is a flat picture, so a car at the top of the image could be 50 m away and look tiny. To put each vehicle on a map, we matched points that can be seen both in the camera view and on a satellite image (lane markings, kerb corners) and fitted a <em>homography</em>, a transform that maps the flat road surface in the image onto the flat road surface on the map.</p>
+<p>On points held back from the fit, the error was 0.6, 1.6 and 2.3 m, growing to about 4&ndash;5 m at the far end of the view (about 50 m away). That is enough to say which lane a car is in near the junction, which is what the queue needs. Each vehicle is then snapped to a lane of the simulation's road network: 98 % of the camera's lane points land on the right simulated lane, with a mean offset of under half a metre.</p>
+<p class="note">One honest limit: we tried calibrating a second camera blindly from Google Street View alone, and it failed our accuracy bar (ground error 4.9 m median, 23 m at P90). The far field needs points you can only get on site.</p>
+
+<h2>The twin: a live simulation that respects privacy</h2>
+<p>The twin is a traffic simulation in <a href="https://eclipse.dev/sumo/">SUMO</a>, an open-source simulator, built on the OpenStreetMap road network (for the main camera, about 1 km in each direction around it). Inside the camera's view, simulated vehicles are moved onto the positions the camera reports. Outside the view, SUMO drives them by its own rules. A 3D viewer in the browser (deck.gl) draws the roads, about 14,000 OpenStreetMap buildings, traffic lights and low-poly vehicles, with a permanent "SIMULATION" banner so nobody mistakes it for video.</p>
+<p><span class="todo">Screenshot wanted:</span> a capture of the 3D viewer (no camera panel on screen) would show this far better than words.</p>
+<p>Privacy was a design rule from the start, not a filter added later. The only thing that leaves the edge is an observation like this:</p>
+<pre><code>{"cam": "1654", "ts": "2026-12-13T10:00:01+07:00", "view_ok": true,
+ "objects": [{"cls": "motorcycle", "lat": 13.79181, "lon": 100.53779, "lane": "2"}],
+ "lanes":   [{"lane": "2", "count": 7, "queue": 5, "moto": 3}]}</code></pre>
+<ul>
+<li><strong>Never in it:</strong> pixels, crops, colours, makes, number plates, faces, or anything that could identify a vehicle.</li>
+<li><strong>The server rejects any extra field,</strong> and a test checks that. It keeps only the latest observation per camera, never a history.</li>
+<li><strong>No tracking IDs.</strong> An ID that follows a car from frame to frame is exactly what turns anonymous dots into a person's route. At one frame per second a car moves about 10 m between frames, so tracking would be unreliable anyway.</li>
+<li><strong>Vehicles in the twin carry simulation IDs,</strong> not camera IDs, and other apps get numbers per road segment (flow, queue, speed), never single vehicles.</li>
+</ul>
+<p>Inside one camera's view, the twin shows less than the public live feed already does: anonymous dots with a vehicle class, and no image.</p>
+
+<h2>The planner: route choice and early greens</h2>
+<p>Given where the ambulance is and where it is going, the planner does two things. It picks the route that will be fastest <em>once cleared</em>, not the one that is fastest right now. Then, along that route, it starts each green light early enough that the queue in front of it has drained by the time the ambulance arrives, while watching that the cross street's queue does not spill back into the junction behind it.</p>
+<p>We tested it on a SUMO model of the roads around Hua Chiew Hospital (2.5 km of main corridor, 38 traffic lights), with a realistic vehicle mix from our camera counts (70 % cars, 26 % motorcycles, 3 % trucks, 1 % buses). Every comparison is <em>paired</em>: the same random seed gives exactly the same traffic, so each planner run is compared with a baseline run on identical traffic. The pass bars were written down before each experiment ran, and were not moved afterwards.</p>
+
+<figure>
+<svg viewBox="0 0 640 330" width="100%" role="img" aria-label="Bar chart of median ambulance trip time in seconds over 60 trips. Low traffic: no help 359, green near each light 280, RETINA 278. Mid: 412, 296, 295. High: 436, 298, 294. Mid traffic with the usual route blocked: 757, 600, 301.">
+<g style="stroke:var(--line);stroke-width:1">
+<path d="M60,240H630"/><path d="M60,190H630" style="stroke-dasharray:3 4"/><path d="M60,140H630" style="stroke-dasharray:3 4"/><path d="M60,90H630" style="stroke-dasharray:3 4"/><path d="M60,40H630" style="stroke-dasharray:3 4"/>
+</g>
+<text x="52" y="244" text-anchor="end" class="muted">0</text><text x="52" y="194" text-anchor="end" class="muted">200</text><text x="52" y="144" text-anchor="end" class="muted">400</text><text x="52" y="94" text-anchor="end" class="muted">600</text><text x="52" y="44" text-anchor="end" class="muted">800 s</text>
+<g>
+<rect class="b1" x="80" y="150.25" width="34" height="89.75"/><rect style="fill:var(--muted)" x="118" y="170" width="34" height="70"/><rect class="b2" x="156" y="170.5" width="34" height="69.5"/>
+<rect class="b1" x="222" y="137" width="34" height="103"/><rect style="fill:var(--muted)" x="260" y="166" width="34" height="74"/><rect class="b2" x="298" y="166.25" width="34" height="73.75"/>
+<rect class="b1" x="364" y="131" width="34" height="109"/><rect style="fill:var(--muted)" x="402" y="165.5" width="34" height="74.5"/><rect class="b2" x="440" y="166.5" width="34" height="73.5"/>
+<rect class="b1" x="506" y="50.75" width="34" height="189.25"/><rect style="fill:var(--muted)" x="544" y="90" width="34" height="150"/><rect class="b2" x="582" y="164.75" width="34" height="75.25"/>
+</g>
+<g style="font-size:11px">
+<text x="97" y="145" text-anchor="middle" style="font-size:11px">359</text><text x="135" y="165" text-anchor="middle" style="font-size:11px">280</text><text x="173" y="165" text-anchor="middle" style="font-size:11px">278</text>
+<text x="239" y="132" text-anchor="middle" style="font-size:11px">412</text><text x="277" y="161" text-anchor="middle" style="font-size:11px">296</text><text x="315" y="161" text-anchor="middle" style="font-size:11px">295</text>
+<text x="381" y="126" text-anchor="middle" style="font-size:11px">436</text><text x="419" y="160" text-anchor="middle" style="font-size:11px">298</text><text x="457" y="161" text-anchor="middle" style="font-size:11px">294</text>
+<text x="523" y="46" text-anchor="middle" style="font-size:11px">757</text><text x="561" y="85" text-anchor="middle" style="font-size:11px">600</text><text x="599" y="160" text-anchor="middle" style="font-size:11px">301</text>
+</g>
+<text x="135" y="262" text-anchor="middle">Low traffic</text><text x="277" y="262" text-anchor="middle">Mid</text><text x="419" y="262" text-anchor="middle">High</text><text x="561" y="262" text-anchor="middle">Mid, route blocked</text>
+<rect class="b1" x="80" y="292" width="12" height="12"/><text x="98" y="302">No help</text>
+<rect style="fill:var(--muted)" x="180" y="292" width="12" height="12"/><text x="198" y="302">Green near each light (150 m)</text>
+<rect class="b2" x="420" y="292" width="12" height="12"/><text x="438" y="302">RETINA planner</text>
+</svg>
+<figcaption>Median ambulance trip time over 60 trips from 20 start points 1.5&ndash;4 km from the hospital (1,440 simulated runs in total). On a clear road the planner ties today's best practice; when the usual route is blocked, it saves about 5 minutes.</figcaption>
+</figure>
+
+<h3>What held up</h3>
+<ul>
+<li><strong>Against no help</strong>, the planner was faster on 95&ndash;97 % of trips from every start point, saving 78&ndash;104 s in the median (21&ndash;30 %).</li>
+<li><strong>With the usual route blocked</strong> by an incident, it saved 312 s in the median over a green-near-each-light system, faster on 97 % of trips, because it chose to go around.</li>
+<li><strong>On the main corridor</strong> (1,620 runs over 30 traffic seeds, then repeated on 30 fresh seeds it had never seen), it beat every baseline in all 9 combinations of traffic level and incident, with confidence intervals above zero.</li>
+<li><strong>With realistic camera noise</strong> (queue errors like our perception's, data 5 s old), it kept at least 71 % of its saving as long as the cameras could see every road.</li>
+</ul>
+
+<h3>What didn't</h3>
+<ul>
+<li><strong>On a clear road it adds nothing over a simple pre-emption system</strong> from most start points: median saving 0&ndash;2 s, faster on only about half the trips. A few detours chosen on small predicted gains even made trips worse. So this experiment <strong>failed its pre-set bar</strong>, and we report it that way.</li>
+<li><strong>Clearing has a cost for everyone else.</strong> On one detour, a single early green flushed a long queue for the ambulance (about 7 minutes saved) but jammed the cross street, adding about 25 s for each of roughly 1,600 other drivers. A "green budget" per junction lets an operator pick a point on that trade-off; with 45 s it was both faster than today's pre-emption and slightly cheaper for other traffic.</li>
+<li><strong>Cameras only at traffic lights miss things.</strong> When a queue spilled back past the camera's view, the planner read it as free road and once drove into it (9 of 30 runs failed to arrive in the worst case).</li>
+<li><strong>The simulation's lights are too regular.</strong> Reading the pedestrian lamps from a day of archived BMA video showed real cycles of 95&ndash;180 s on fixed plans and 157&ndash;416 s at a junction under manual control, against SUMO's default 90 s. The simulated "today" is probably too kind, and the next step is to re-run with measured plans.</li>
+</ul>
+<p>The takeaway is narrower than "it saves time everywhere": the value over the best of today is <strong>choosing a route around a disruption</strong>, and that needs a camera that can actually see the disruption. Only a field trial with real signal control can measure the real saving.</p>
+
+<h2>Where this could go: a 3D twin of Bangkok</h2>
+<p>RETINA covers one camera for real and a few kilometres of roads in simulation. The idea I want to grow from it is a 3D digital twin of Bangkok: a live model of the city's traffic and streets, built from the cameras the city already has and from other sensors, that planners, emergency services and the public can all use, without anyone being watched.</p>
+<p>The design above is meant to scale to that. The edge does not need to be a box on every pole: it can sit in the camera owner's control room, for example the city's CCTV centre where the feeds already arrive, so video never leaves the city's own network and only observations do.</p>
+<p><span class="todo">More from you:</span> which other sensors, who would use the twin, and what you would build first.</p>
+
+<h2>What I learned</h2>
+<ul>
+<li><strong>Write the pass bar before the experiment.</strong> Two of our headline results are failures by our own bars, and they taught us more than the passes: where the saving actually comes from, and what it costs other drivers.</li>
+<li><strong>Privacy is easiest as a data contract.</strong> Deciding up front what an observation may contain, and rejecting anything else, made every later decision simpler than trying to blur video afterwards.</li>
+<li><strong>A simulation is only as good as its "today".</strong> Measuring real signal cycles from archived video was cheap and changed how much we trust the baseline.</li>
+</ul>
+<p class="note">Demo for the competition judges on 13 December 2026. The 3D twin and planner run on simulated traffic, except the one real camera; the screens say so.</p>
+</main>
+</div>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
+</div></footer>
+</body>
+</html>
