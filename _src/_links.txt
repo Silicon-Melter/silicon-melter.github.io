@@ -6,5 +6,4 @@ url: https://huggingface.co/earth37815
 date: 2026-10
 when: 2026
 thumb: /assets/thumbs/driving-datasets.svg
-selected: yes
 card: Expert driving recorded in CARLA, five curated subsets (277 GB) plus a full pack, MIT licence.
