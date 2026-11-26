@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A small homelab, set up and watched by AI agents · Noppawit Tharakittikirati</title>
+<meta name="description" content="How a Raspberry Pi 5 became the camera relay for RETINA, our Bangkok emergency-traffic project: two AI coding agents set it up from a written brief, simple self-healing layers keep it running, and one script checks every hop.">
+<meta property="og:title" content="A small homelab, set up and watched by AI agents · Noppawit Tharakittikirati">
+<meta property="og:description" content="How a Raspberry Pi 5 became the camera relay for RETINA, our Bangkok emergency-traffic project: two AI coding agents set it up from a written brief, simple self-healing layers keep it running, and one script checks every hop.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="article">
+<header class="masthead"><div class="bar">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">About</a><a href="/projects/">Projects</a><a href="/posts/" class=on>Posts</a><a href="/cv/Noppawit_Tharakittikirati_CV.pdf">CV</a></nav>
+</div></header>
+<div class="layout">
+<aside class="profile">
+<img class="avatar" src="/assets/img/profile.jpg" alt="Photo of Noppawit Tharakittikirati" width="160" height="160">
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
+<h1>A small homelab, set up and watched by AI agents</h1>
+<p class="meta">November 2026 &middot; about 6 minutes</p>
+
+<p class="lead">RETINA is a student project that helps ambulances through Bangkok traffic: cameras measure queues at junctions, and a planner suggests routes and earlier green lights. It needs a small device next to a street camera that passes the video on to our hub PC. I set that device up on a Raspberry Pi 5 in one day, with most of the work done by AI coding agents. This post is about how that went, and why I think home labs like this have become much easier to run.</p>
+
+<h2>What the setup does</h2>
+<p>There are only three pieces:</p>
+<ul>
+<li><strong>The camera</strong>, a TP-Link VIGI IP camera that streams video over RTSP (the usual protocol for network cameras).</li>
+<li><strong>The edge device</strong>, a Raspberry Pi 5 on Ubuntu 24.04 next to the camera. It runs one program, MediaMTX, in Docker. MediaMTX opens a single connection to the camera and <em>relays</em> it: anyone allowed can read the stream from the Pi, and the camera only ever serves one viewer.</li>
+<li><strong>The hub</strong>, an Ubuntu PC in the lab with an RTX 3060 Ti. It pulls the stream from the Pi, shows it on a dashboard for our team, and runs the vehicle detector that measures lane queues.</li>
+</ul>
+<p>The Pi and the hub are joined by <strong>Tailscale</strong>, a private network that works over the internet. That matters because the Pi may sit behind a 4G connection, where you can't open a port on a router. With Tailscale no ports are opened at all, and the stream can only be read from inside our own network.</p>
+<p>Before the Pi, the edge was a laptop with an NVIDIA GPU that also ran an ambulance detector. That detector is still in the code, switched off on the Pi, for the NVIDIA Jetson board that will replace the Pi later.</p>
+
+<h2>Two agents and a written brief</h2>
+<p>The hub PC already had a Claude Code session working in the hub's repository (Claude Code is an AI coding agent that runs commands and edits files in a terminal). When the Pi arrived, I asked that session to write a <strong>handoff brief</strong> for a second Claude Code session that would run on the Pi itself.</p>
+<p>The brief is one Markdown file. It states the goal in one line ("relay the camera to the hub"), lists the facts the new agent can't guess (which other Pi is on the same network and must not be touched, where the hub expects the stream), and then gives the steps in order, each with a check: set the hostname, then check it; install Docker, then run a test container; and so on. At the end it asks for a report with the real output of each check, for me to paste back to the hub's session.</p>
+<p>Some steps need a person: anything with <code>sudo</code>, signing in to Tailscale or GitHub, typing the camera's password. The brief marks those <strong>[user]</strong>. The agent asks me to run them, then checks the result itself. Everything else it did on its own: it wrote the Pi section of the setup guide, changed the Docker setup so the GPU-only detector stays off on the Pi, and committed each working step to the repository.</p>
+<p>Two rules in the brief did a lot of quiet work. The camera's password lives only in one file on the Pi, readable only by its owner, and never goes into git, logs or the chat. And no video frame leaves the Pi or the hub, because street video shows faces and number plates, which Thailand's data-protection law (PDPA) covers.</p>
+
+<h2>Keeping it running without me</h2>
+<p>A device next to a street camera loses power now and then. I wanted it to come back by itself, so the setup has a few simple layers, each covering what the one before can't:</p>
+<ol>
+<li><strong>Boot.</strong> The Pi 5 switches itself on when power returns. Docker, Tailscale, SSH and the clock sync all start at boot.</li>
+<li><strong>Restart.</strong> The relay container is set to restart unless I stopped it on purpose. If the camera boots slower than the Pi, the relay keeps retrying until the camera answers.</li>
+<li><strong>Watchdog.</strong> A short shell script runs every 2 minutes from cron. It starts the relay if it isn't running. If the camera stops answering, it looks for the camera by its hardware (MAC) address on the local network, because after a power cut the router may hand the camera a new address. When it finds it, it updates that one setting and restarts the relay. It writes what it did to a log and never prints the password. It also has a dry-run mode, so it can be tested without changing anything.</li>
+<li><strong>One health check.</strong> On the hub, a script checks every hop in order: the containers, the private network to the Pi, the Pi's stream, the hub's copy of it, whether the hub is showing the real camera or its "offline" placeholder, the live video endpoints, and the hub's own API. Each line prints <code>[ok]</code> or <code>[FAIL]</code> with a hint at where to look.</li>
+</ol>
+<p>None of this is clever. That is the point: each layer is a few lines that an agent, or a person, can read in a minute.</p>
+
+<h2>Where an agent on standby fits</h2>
+<p>A health check is only useful if someone runs it and reads the answer. This is the part that has changed the most for me. An AI agent can sit on standby, run the check on a schedule, read the watchdog's log, and when something fails, look at the logs it points to and either fix the simple cases or tell me what it found. The hub's session already has SSH access to the Pi for exactly this kind of check.</p>
+<p>What makes that safe is the same thing that made the setup easy: the system is small, every check has a clear pass or fail, and the rules about what the agent may not touch (the password, the video, the other Pi) are written down. A simple setup with a good test is more reliable than ever, because the "someone who runs the test" can now be an agent.</p>
+
+<h2>Things that went wrong</h2>
+<ul>
+<li><strong>The lab network.</strong> The wired lab router turned out to block Tailscale, GitHub, PyPI, Hugging Face and Docker Hub. The hub went back to Wi-Fi as its main link, with only Tailscale's own traffic routed there on purpose.</li>
+<li><strong>A Wi-Fi adapter that looked connected but wasn't.</strong> The hub's USB Wi-Fi adapter has a power-saving bug that stalls traffic while the link still shows as up. Switching power saving off fixed it. This is exactly the kind of fault a "[ok] / [FAIL]" check catches and a glance at a status icon doesn't.</li>
+<li><strong>The hostname that reset itself.</strong> Ubuntu's cloud-init set the Pi's hostname back at every boot until one config line told it not to.</li>
+<li><strong>The old video path.</strong> Before the relay, the hub converted the stream with ffmpeg into HLS, a web video format. It ran 2 to 4 seconds behind and went blank for about 11 seconds on every network drop (measured on 28 October 2026). The hub now pulls the Pi's stream directly and plays a placeholder while the Pi is offline, so the dashboard never shows a blank screen.</li>
+</ul>
+
+<h2>How I test it</h2>
+<p>These are the tests I run on the setup, each with a clear pass rule.</p>
+<table>
+<thead><tr><th>Test</th><th>How</th><th>Pass when</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Every hop</td><td>Run the hub's health check with the Pi online</td><td>every line <code>[ok]</code>, source online</td><td>RESULT_1</td></tr>
+<tr><td>Reboot</td><td>Reboot the Pi, time until the check is all <code>[ok]</code> again</td><td>back with no one touching it</td><td>RESULT_2</td></tr>
+<tr><td>Power cut</td><td>Pull the power of the Pi and the camera together, plug both back in</td><td>back with no one touching it</td><td>RESULT_3</td></tr>
+<tr><td>Camera moves address</td><td>Run the watchdog in dry-run mode with a wrong camera address</td><td>the log says it found the camera at the right address</td><td>RESULT_4</td></tr>
+<tr><td>Network drop</td><td>Unplug the Pi's network for a minute</td><td>dashboard shows the placeholder, then live video again</td><td>RESULT_5</td></tr>
+<tr><td>Load on the Pi</td><td><code>docker stats</code> on the Pi while the hub reads the stream</td><td>a few % CPU</td><td>RESULT_6</td></tr>
+<tr><td>Delay</td><td>The hub's latency script, with a clock page held in front of the camera</td><td>under 1 second, camera to dashboard</td><td>RESULT_7</td></tr>
+</tbody>
+</table>
+
+<h2>What I learned</h2>
+<p>Writing the brief was most of the work, and it paid off twice: once when the agent on the Pi followed it, and again now, because the brief, the setup guide and the health check together describe the whole system. A home lab used to need someone who remembered how it was put together. Now the memory is a few files that an agent reads before it touches anything.</p>
+<p>The relay is the smallest part of RETINA. The perception, map and planner parts, and the emergency-call app, deserve their own posts.</p>
+</main>
+</div>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
+</div></footer>
+</body>
+</html>
