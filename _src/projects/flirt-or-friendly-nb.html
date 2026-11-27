@@ -11,6 +11,17 @@ thumb: /assets/thumbs/naive-bayes.svg
 <h1>Flirt or friendly? Naive Bayes from scratch</h1>
 <p class="meta">Mar 2026 &middot; Course project, 01416305 Artificial Intelligence Technology, KMITL &middot; Team of three &middot; Python, NumPy, pandas, NLTK &middot; <a href="https://github.com/Silicon-Melter/Flirt-or-Friendly-MultinomialNB-from-scratch">Code on GitHub</a></p>
 <p class="lead">"I'm falling in love with you, my friend." Flirty or friendly? Face to face you would know from the tone of voice and body language. In a text message none of that is there, and even people get it wrong. For our AI course project we asked whether one of the simplest models in machine learning could learn the difference, and wrote it from scratch to find out.</p>
+<a class="try" href="#demo"><span class="try-k">Live demo</span><span class="try-t">Type a message and watch the trained model decide, word by word</span><span class="try-a" aria-hidden="true">&darr;</span></a>
+<style>
+.try{display:flex;align-items:center;gap:14px;margin:4px 0 26px;padding:14px 18px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--fg)}
+.try:hover{text-decoration:none;box-shadow:0 4px 16px rgba(31,95,191,.18)}
+.try-k{flex:none;background:var(--accent);color:var(--bg);font-size:12.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
+.try-t{flex:1;font-weight:560;line-height:1.4}
+.try-a{flex:none;font-size:20px;color:var(--accent)}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+#demo{scroll-margin-top:72px}
+</style>
 <p>Naive Bayes is about the most basic language model there is: it just counts words. So the results are not impressive next to modern AI, and that was never the point. Building it from nothing gave me an intuition for what a language model actually has to learn, and why modern Transformer models are built the way they are. It was my starting point for that modern approach.</p>
 <p>This was group work with my classmates Paveetas and Phuvit, for the course taught by Bee-ing Sae-ang. We did the model, the experiments, a report and a class presentation together. Later I came back to the code on my own to check one result more carefully (the last section).</p>
 
@@ -64,10 +75,10 @@ friendly: 0.474 &times; 0.108 &times; 0.135 &times; 0.041 &times; 0.162 &times; 
 </table>
 <p>With the priors (849 flirty and 839 friendly training messages), the log scores are &minus;27.8 for flirty and &minus;35.2 for friendly, so the model says flirty. Every word leaned the same way, and the winking emoticon did most of the work.</p>
 
-<h3>Try it yourself</h3>
+<h2 id="demo">Try the model yourself</h2>
 <p>This is our trained model running in your browser: the same word counts, the same cleaning steps (ported to JavaScript, giving the same tokens as the Python code on all 4,979 messages in the dataset). Type a message and watch each word's likelihood in both classes, and how hard it pushes the verdict. Nothing you type leaves your browser.</p>
 <style>
-.ff{border:1px solid var(--line);border-radius:10px;padding:16px;margin:18px 0 24px;background:var(--soft)}
+.ff{border:2px solid var(--accent);border-radius:12px;padding:18px;margin:18px 0 24px;background:var(--soft);box-shadow:0 6px 24px rgba(31,95,191,.12)}
 .ff-label{display:block;color:var(--muted);font-size:13.5px;margin-bottom:4px}
 .ff textarea{box-sizing:border-box;width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:vertical}
 .ff textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
