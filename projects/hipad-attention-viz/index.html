@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where a driving model looks: visualising HiP-AD&#x27;s deformable attention · Noppawit Tharakittikirati</title>
+<meta name="description" content="A tool that records where the end-to-end driving model HiP-AD samples its camera images, and draws it on the six cameras and a bird&#x27;s-eye view, on Bench2Drive scenes.">
+<meta property="og:title" content="Where a driving model looks: visualising HiP-AD&#x27;s deformable attention · Noppawit Tharakittikirati">
+<meta property="og:description" content="A tool that records where the end-to-end driving model HiP-AD samples its camera images, and draws it on the six cameras and a bird&#x27;s-eye view, on Bench2Drive scenes.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="article">
+<header class="masthead"><div class="bar">
+<a class="name" href="/">Noppawit Tharakittikirati</a>
+<nav><a href="/">About</a><a href="/projects/" class=on>Projects</a><a href="/posts/">Posts</a><a href="/cv/Noppawit_Tharakittikirati_CV.pdf">CV</a></nav>
+</div></header>
+<div class="layout">
+<aside class="profile">
+<img class="avatar" src="/assets/img/profile.jpg" alt="Photo of Noppawit Tharakittikirati" width="160" height="160">
+<div class="who">
+<p class="pname"><a href="/">Noppawit Tharakittikirati</a></p>
+<p class="role">Robotics &amp; AI Engineering student</p>
+<ul class="facts">
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z" fill="none"/><path d="M6 11v5c3 2 9 2 12 0v-5" fill="none"/></svg>KMITL, Bangkok</li>
+<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" fill="none"/><circle cx="12" cy="10" r="2" fill="none"/></svg>Thailand</li>
+</ul>
+</div>
+<ul class="plinks">
+<li><a href="mailto:n.tharakittikirati@gmail.com"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z" fill="none"/><path d="m3 6 9 7 9-7" fill="none"/></svg><span>Email</span></a></li><li><a href="https://github.com/Silicon-Melter"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none"/></svg><span>GitHub</span></a></li><li><a href="https://www.linkedin.com/in/tharakittikirati/"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="none"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" fill="none"/></svg><span>LinkedIn</span></a></li><li><a href="https://huggingface.co/earth37815"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="none"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10v.01M15 10v.01" fill="none"/></svg><span>Hugging Face</span></a></li><li><a href="/cv/Noppawit_Tharakittikirati_CV.pdf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z" fill="none"/><path d="M14 3v4h4M9 12h6M9 16h6" fill="none"/></svg><span>CV (PDF)</span></a></li>
+</ul>
+</aside>
+<main>
+<h1>Where a driving model looks: visualising HiP-AD's deformable attention</h1>
+<p class="meta">2026 &middot; End-to-end autonomous driving research, started during my research internship at National Chung Cheng University, Taiwan &middot; Python, PyTorch, mmdetection3d, CUDA, matplotlib</p>
+<p class="lead">An end-to-end driving model takes camera images in and gives a planned path out, with nothing hand-written in between. That makes it hard to ask the obvious question: <em>what did it look at before it decided?</em> For HiP-AD, the model I build on, the answer can be read out exactly, so I wrote a tool to record it and draw it.</p>
+<figure>
+<a href="/assets/hipad-attention-viz/ped-plan-query.jpg"><img src="/assets/hipad-attention-viz/ped-plan-query.jpg" alt="Six camera images in fog with coloured dots clustered around a child crossing ahead in the front camera, and a bird's-eye view on the right showing the planned path and the same dots" width="100%"></a>
+<figcaption>Click any figure for full size. A child crossing 6.4&nbsp;m ahead in fog, car stopped. Each dot is a spot where one of the planner's queries reads the images; brighter means more weight. 99% of the weight that lands inside an image is in the front camera, along the path the car would take.</figcaption>
+</figure>
+
+<h2>The model, in plain words</h2>
+<p><strong>HiP-AD</strong> (Nullmax, 2025, <a href="https://arxiv.org/abs/2503.08612">arXiv 2503.08612</a>) looks at six camera images around the car and, in one network, returns three things: 3D boxes around the other road users, the lane lines, and the path the car itself should drive. Its public checkpoint reports a Driving Score of 86.77 on Bench2Drive, according to its README.</p>
+<p><strong>Bench2Drive</strong> is a benchmark built in the CARLA driving simulator. It has short routes that each contain one tricky situation, such as a pedestrian stepping out or a car cutting in, and a dataset of expert driving to learn from. The model learns by imitation: it copies the expert.</p>
+<p>Inside HiP-AD, everything the model has to find is a <strong>query</strong>: a slot holding 256 learned numbers plus a 3D guess of where its thing is (an <em>anchor</em>). There are 900 queries for objects, 100 for lane lines, one for the car's own state, and 480 for planning. The 480 planning queries are 48 candidate path shapes (<em>modes</em>), each written ten ways. Four of those ways matter here: the same future path described by a point every 0.2&nbsp;s or every 0.5&nbsp;s, or a point every 2&nbsp;m or every 5&nbsp;m. HiP-AD calls this <em>multi-granularity</em> planning. Six decoder layers refine every query in turn, and at the end the model picks the best-scoring mode for the current driving command.</p>
+
+<h2>Deformable attention: reading a few spots, not every pixel</h2>
+<p>A query does not look at whole images. It reads them through <strong>deformable attention</strong>:</p>
+<ol>
+<li>It places a small set of 3D <strong>sampling points</strong> around its anchor. Some sit at fixed offsets; others are learned from the query's own features, so they can move.</li>
+<li>Each point is projected into every camera.</li>
+<li>The model reads the image features at those spots, at four image scales.</li>
+<li>It adds up the readings with learned <strong>weights</strong> that sum to 1.</li>
+</ol>
+<figure>
+<svg viewBox="0 0 440 330" width="100%" style="max-width:480px;display:block;margin:0 auto" role="img" aria-label="Diagram: a query with a 3D anchor places 3D sampling points, which are projected into the six cameras. Image features are read at those spots at four scales and summed with learned weights that add up to 1, giving the updated query. The tool records the sampling points and the weights.">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--muted)"/></marker></defs>
+<g style="fill:var(--card);stroke:var(--fg);stroke-width:1.2">
+<rect x="20" y="10" width="200" height="48" rx="6"/>
+<rect x="20" y="88" width="200" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+<rect x="20" y="166" width="200" height="48" rx="6"/>
+<rect x="20" y="244" width="200" height="48" rx="6" style="stroke:var(--accent);stroke-width:2"/>
+</g>
+<text x="120" y="31" text-anchor="middle">Query</text><text x="120" y="48" text-anchor="middle" class="muted">256 numbers + 3D anchor</text>
+<text x="120" y="109" text-anchor="middle">3D sampling points</text><text x="120" y="126" text-anchor="middle" class="muted">90 for a plan, 13 for an object</text>
+<text x="120" y="187" text-anchor="middle">Project into 6 cameras</text><text x="120" y="204" text-anchor="middle" class="muted">read features, 4 scales</text>
+<text x="120" y="265" text-anchor="middle">Weighted sum</text><text x="120" y="282" text-anchor="middle" class="muted">weights add up to 1</text>
+<g style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ah)">
+<path d="M120,58V84"/><path d="M120,136V162"/><path d="M120,214V240"/>
+<path d="M120,292V312H8V34H16"/>
+</g>
+<text x="14" y="326" class="muted" style="font-size:11px">updated query, next decoder layer</text>
+<g style="fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3">
+<path d="M224,112H300"/><path d="M224,268H300"/>
+</g>
+<text x="306" y="108" style="font-size:12px">recorded:</text><text x="306" y="123" class="muted" style="font-size:12px">where it looks</text>
+<text x="306" y="264" style="font-size:12px">recorded:</text><text x="306" y="279" class="muted" style="font-size:12px">how much each</text><text x="306" y="294" class="muted" style="font-size:12px">spot counts</text>
+</svg>
+<figcaption>How one query reads the cameras. The points and their weights <em>are</em> where the query looks, so drawing them needs no approximation.</figcaption>
+</figure>
+<p>A planning query places its points along its own path: 6 waypoints &times; 5 heights &times; 3 learned offsets, 90 points in all. An object query uses 13 points around its box. That is the nice thing about this design: unlike a saliency map, which estimates what mattered after the fact, here the model's own sampling points and weights are the answer.</p>
+
+<h2>The tool</h2>
+<p>The tool hooks the attention module in each of HiP-AD's six decoder layers and records, for chosen queries, the 3D sampling points and their weights. It also records which mode the planner picked, so it can follow the path the car actually takes. It changes no computation: a test rebuilds the module's output from the recorded points and weights and gets the same tensor. It then draws everything on the six camera images and on a bird's-eye view (BEV), and can make per-layer views and short videos.</p>
+<p>Four details would have given wrong or misleading pictures if I had not caught them while building it:</p>
+<ul>
+<li><strong>Object queries change places after the first layer.</strong> HiP-AD re-sorts them so the slots first hold objects tracked from the previous frame, so query 601 at layer 0 is a different object from query 601 at layer 5. The tool records where each one came from, and a test checks the mapping bit for bit.</li>
+<li><strong>Much of the weight can land where no camera sees.</strong> A point behind the car still gets weight in the front camera, but the GPU kernel skips any sample outside the image, so that weight contributes nothing. The figures colour only the weight that lands inside an image, and each title says what share that is.</li>
+<li><strong>Resolution.</strong> The network sees 640&nbsp;&times;&nbsp;352 crops; the figures are drawn on the original 1600&nbsp;&times;&nbsp;900 images. A test checks that the two projections agree within 0.5&nbsp;px.</li>
+<li><strong>Running without a GPU.</strong> HiP-AD needs flash-attention and a custom CUDA op. I wrote plain-PyTorch stand-ins for both, copying the kernel's rules, so the tool also runs on a CPU.</li>
+</ul>
+<p>Nine tests cover the geometry, the recording and the projection, and I checked they fail on deliberately broken versions of the recorder. On an RTX 3070 the model runs at 1.69&nbsp;s per frame in fp16 and needs under 2&nbsp;GB of GPU memory.</p>
+
+<h2>How to read the figures</h2>
+<ul>
+<li><strong>Left:</strong> the six cameras. Front row: front-left, front, front-right. Back row mirrored, as in a rear-view mirror.</li>
+<li><strong>Right:</strong> a bird's-eye view in metres, the car in green at the origin, driving up.</li>
+<li><strong>Dots:</strong> sampling points. Brighter and bigger means more weight, relative to that query's largest.</li>
+<li><strong>Cyan circles:</strong> the query's reference points (path waypoints, or a box centre). <strong>Coloured lines:</strong> the four path granularities. <strong>Blue boxes:</strong> the model's detections. <strong>Pink dashed:</strong> the true pedestrian position from the simulator.</li>
+</ul>
+<p>The scenes are three clips from the official Bench2Drive validation list: a child crossing in fog, a left turn at a junction without traffic lights, and a highway cut-in.</p>
+
+<h2>What the pictures show</h2>
+<h3>1. Each granularity looks at a different distance</h3>
+<figure>
+<a href="/assets/hipad-attention-viz/ped-granularities.jpg"><img src="/assets/hipad-attention-viz/ped-granularities.jpg" alt="Four columns, one per path granularity, each with a front camera image and a bird's-eye view. The dots move further ahead from left to right" width="100%"></a>
+<figcaption>Same fog scene at 7.9&nbsp;m/s, just before the car stops. Left to right: 0.2&nbsp;s, 0.5&nbsp;s, 2&nbsp;m and 5&nbsp;m steps. The weighted mean distance of the visible samples is 2.5, 6.8, 10.6 and 21.8&nbsp;m ahead.</figcaption>
+</figure>
+<p>The short-step paths look near and the long-step paths look far, which is what the multi-granularity design intends. With the child about 8&nbsp;m ahead, the 0.5&nbsp;s query puts 19% of its visible weight within 1.5&nbsp;m of the child, and the 5&nbsp;m query puts none there: it is looking further down the road.</p>
+
+<h3>2. The plan bends into the turn within one layer</h3>
+<figure>
+<a href="/assets/hipad-attention-viz/turn-plan-query.jpg"><img src="/assets/hipad-attention-viz/turn-plan-query.jpg" alt="Six camera images at a rural junction; the planned path curves left and the dots spread across the front-left and front cameras" width="100%"></a>
+<figcaption>Left turn at 5.1&nbsp;m/s. The 2&nbsp;m-step path ends 9.8&nbsp;m to the left and 7.0&nbsp;m ahead, and 76% of the visible weight is on points more than 2&nbsp;m to the left, split between the front-left (53%) and front (46%) cameras.</figcaption>
+</figure>
+<figure>
+<a href="/assets/hipad-attention-viz/turn-layers.jpg"><img src="/assets/hipad-attention-viz/turn-layers.jpg" alt="The front-left camera shown six times, once per decoder layer; the red path is straight at layer 0 and bends left from layer 1" width="100%"></a>
+<figcaption>The same query in decoder layers 0 to 5, front-left camera. At layer 0 its path still runs straight and 3% of its visible weight is in this camera; from layer 1 the path bends into the turn and this camera's share rises to 60&ndash;94% in layers 1 to 4.</figcaption>
+</figure>
+<figure>
+<video src="/assets/hipad-attention-viz/turn-clip.mp4" poster="/assets/hipad-attention-viz/turn-clip-poster.jpg" controls muted playsinline preload="none" width="100%"></video>
+<figcaption>The whole turn, about 7 seconds: the path bends left, then the car holds for crossing traffic.</figcaption>
+</figure>
+
+<h3>3. Object queries sit on their objects, but most of their weight is wasted</h3>
+<figure>
+<a href="/assets/hipad-attention-viz/cutin-det-query.jpg"><img src="/assets/hipad-attention-viz/cutin-det-query.jpg" alt="Six camera images on a wet highway; all the dots of one object query sit on a car ahead in the front camera" width="100%"></a>
+<figcaption>Highway cut-in: the query for a car 22.6&nbsp;m ahead (score 0.80) puts all 13 points on the car's box, but only 17% of its weight lands on samples a camera can see.</figcaption>
+</figure>
+<p>The points are in the right place. For the child, a per-layer view shows them scattered at layer 0 and locked onto the child from layer 1 on. The surprise is the weights. Across the three clips, the median share of an object query's weight that lands inside an image is 0.17 to 0.18. That is about 1/6, what you would expect if the weights ignored which of the six cameras can actually see each point. Planning queries do better (median 0.46 to 0.82 for the 2&nbsp;m path), because their long paths stay in front of the car.</p>
+<table>
+<tr><th>Clip</th><th class="n">Object queries</th><th class="n">2&nbsp;m plan query</th><th class="n">0.2&nbsp;s plan query</th></tr>
+<tr><td>Child crossing</td><td class="n">0.17</td><td class="n">0.62</td><td class="n">0.25</td></tr>
+<tr><td>Left turn</td><td class="n">0.18</td><td class="n">0.46</td><td class="n">0.18</td></tr>
+<tr><td>Highway cut-in</td><td class="n">0.17</td><td class="n">0.82</td><td class="n">0.73</td></tr>
+</table>
+<p class="note">Median share of weight on samples inside an image, decoder layer 5. Object queries: 162, 578 and 291 of them per clip.</p>
+
+<h3>4. A failure: the child is lost while standing right ahead</h3>
+<figure>
+<a href="/assets/hipad-attention-viz/ped-missed.jpg"><img src="/assets/hipad-attention-viz/ped-missed.jpg" alt="Front cameras in fog: the child stands in plain view ahead, marked by the pink true-position box, but there is no blue detection box on them" width="100%"></a>
+<figcaption>The child stands about 6&nbsp;m ahead in plain view (pink box), but no pedestrian detection passes the 0.35 display threshold; the best is 0.31.</figcaption>
+</figure>
+<p>Frame by frame, the best pedestrian score near the child rises from 0.11 to 0.69 as they step out, then drops to 0.22&ndash;0.31 for five frames while they stand 6&nbsp;m ahead, then comes back to 0.54. The planner kept the car stopped through those frames, so nothing went wrong here, but it is exactly the kind of moment a picture makes obvious and a single score hides.</p>
+<figure>
+<video src="/assets/hipad-attention-viz/ped-clip.mp4" poster="/assets/hipad-attention-viz/ped-clip-poster.jpg" controls muted playsinline preload="none" width="100%"></video>
+<figcaption>The fog scene, about 7 seconds: the planner's 2&nbsp;m-step query while the car brakes, waits for the child and drives off.</figcaption>
+</figure>
+
+<h2>Caveats</h2>
+<ul>
+<li><strong>The final figures come from a CPU run</strong> (fp32, using my stand-ins), because both GPUs were busy with another job. On the same 16 frames, a GPU run picks the same path mode in 10 of 16 frames, and the planned paths differ by 0.13&nbsp;m at the median. The pictures look the same but are not bit-identical to the GPU path; the test comparing my stand-ins with the CUDA kernels has not run on a GPU yet.</li>
+<li><strong>The chosen mode changes almost every frame</strong> (25 different modes in 40 frames in the fog clip), so the query shown in the videos is not the same query from frame to frame. That is how HiP-AD picks, not a tool error.</li>
+<li><strong>This is an open-loop replay</strong> of recorded clips, not a drive where the model's own decisions change what happens next.</li>
+<li>Three clips are a small sample. The numbers describe these scenes, not the model in general.</li>
+</ul>
+
+<h2>What I learned</h2>
+<ul>
+<li><strong>Some models can show their own attention.</strong> With deformable attention, the sampling points and weights are the mechanism itself, so the picture is exact rather than an estimate. It was worth reading the model closely enough to see that.</li>
+<li><strong>A plausible picture can still be wrong.</strong> The re-sorted queries and the invisible samples would both have produced figures that looked fine and meant something else. Tests that check the recording against the model caught them.</li>
+<li><strong>Pictures find questions that metrics miss.</strong> The 1/6 visible-weight pattern and the lost child came from looking, not from a score.</li>
+</ul>
+<p class="note">Model: the public HiP-AD stage-2 checkpoint (<a href="https://github.com/nullmax-vision/hip-ad">nullmax-vision/hip-ad</a>). Data: Bench2Drive validation clips. Hardware: a PC with two RTX 3070 8&nbsp;GB, November 2026. The tool's code is in a private research repository for now.</p>
+</main>
+</div>
+<footer><div class="bar">
+<span>&copy; 2026 Noppawit Tharakittikirati</span>
+<span>Plain HTML and CSS, hosted on GitHub Pages</span>
+</div></footer>
+</body>
+</html>
