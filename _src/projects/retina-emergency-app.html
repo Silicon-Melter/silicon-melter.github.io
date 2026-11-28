@@ -1,0 +1,79 @@
+title: An emergency response app where AI does the busywork and people decide
+description: RETINA's EMS apps: call intake, dispatch and an ambulance tablet sharing one live case, where AI suggests facts from the call and computes routes, and every decision stays with a person. Built by a KMITL team for Advantech AIoT InnoWorks 2026.
+nav: projects
+date: 2026-11
+when: 2026
+thumb: /assets/retina-ems/retina-ems-thumb.jpg
+card: Call intake, dispatch and an ambulance tablet on one live case. AI listens, suggests and computes; the call taker, dispatcher and crew make every decision.
+---
+<h1>An emergency response app where AI does the busywork and people decide</h1>
+<p class="meta">2026 &middot; RETINA, KMITL team project for Advantech AIoT InnoWorks 2026 (Smart City: Emergency Response) &middot; React, TypeScript, Node.js, SQLite, Leaflet, OpenStreetMap, Playwright</p>
+
+<p class="lead">When someone calls an ambulance, a small number of people carry the whole response: the call taker who works out what happened and where, the dispatcher who picks a hospital and a unit, and the crew driving through traffic. There are never enough of them. Our team designed an app for those three jobs, built around one idea: let AI take the routine work off their hands, and keep every decision with a person.</p>
+
+<figure>
+<img src="/assets/retina-ems/intake-ai-keywords.jpg" alt="The call intake screen: a live transcript of the call on the left with phrases such as 'unconscious', 'not breathing' and 'bleeding from his head' underlined, suggested keywords shown as dashed chips in the middle, and a map with the caller's location waiting for two-step verification on the right" width="100%">
+<figcaption>Call intake while the call is still going. The suggested keywords (dashed) are not part of the case until the call taker taps them. Every patient, caller and case in these screenshots is made up.</figcaption>
+</figure>
+
+<h2>The idea</h2>
+<p>RETINA is our team's entry to Advantech's AIoT InnoWorks 2026 competition. Most of the project is about traffic: reading Bangkok's city traffic cameras, modelling the roads, and clearing the way ahead of an ambulance with early green lights. This page is about the part the people in the control room and the ambulance actually touch: three apps that follow one emergency from the phone call to the hospital door.</p>
+<p>In Thailand, 1669 is the emergency medical number. Behind it, a call taker types up the incident while still talking to a frightened caller, a dispatcher matches the case with a hospital and a free ambulance, and the crew needs directions and updates without looking away from the road for long. Much of that work is routine: writing down what the caller said, finding the address on a map, checking which hospital is closest, telling the hospital the patient is coming, telling dispatch the ambulance has arrived. That is the work we wanted software to do.</p>
+<p>The rule we set before writing any code: <strong>AI may suggest facts; people make every decision.</strong> The app never picks a triage code, a hospital or an ambulance, and nothing is pre-selected. Where it shows a list, it sorts it by a plain fact, like driving time, rather than by a score it made up. We wanted something a dispatcher could trust on a bad night, and an app that quietly makes choices for you is hard to trust.</p>
+
+<h2>Three apps, one live case</h2>
+<p>All three apps work on the same live record, which we call a case. When one person changes it, the others see the change at once, without refreshing.</p>
+<ul>
+<li><strong>Call Intake</strong> (desktop) is for the call taker. The call is transcribed as it goes, and phrases that matter, like "not breathing" or "no helmet", are picked out and offered as keyword suggestions. The call taker taps the ones that are right and dismisses the rest. The location is found by searching an address or landmark, then locked in two steps: the caller confirms it, and the call taker locks it.</li>
+<li><strong>Dispatch</strong> (desktop) is for the dispatcher. A case board groups every open case by status. Opening a case walks through four steps: triage, destination hospital, which ambulance, then tracking until handover.</li>
+<li><strong>Ambulance Copilot</strong> (tablet) is for the crew. It shows the new job to accept or decline, turn-by-turn directions, and a few large buttons for the moments that matter: patient on board, request traffic help, hand over.</li>
+</ul>
+
+<figure>
+<img src="/assets/retina-ems/dispatch-case-board.jpg" alt="The dispatch case board: six open cases grouped as awaiting triage, unit declined, en route, patient on board and at hospital, with the selected case's details and a map on the right" width="100%">
+<figcaption>The dispatcher's case board. A case that a crew declines comes back here with the reason, and the hospital already chosen is kept.</figcaption>
+</figure>
+
+<h2>Where the AI helps, and where it stops</h2>
+<p>Here is what the software does for people, step by step through one case:</p>
+<ul>
+<li><strong>Listening.</strong> The transcript and the keyword chips save the call taker from typing while they talk. A suggestion stays a dashed chip until a person accepts it, so a misheard word never becomes a fact by accident.</li>
+<li><strong>Looking things up.</strong> The dispatcher sees the hospitals and ambulances sorted by how long it takes to drive there, on our own map of Bangkok's roads, with each hospital's emergency room status next to it.</li>
+<li><strong>Routing.</strong> Once a crew accepts, the app asks RETINA's route planner for a route, which takes the live traffic into account, and the tablet navigates on it. Until the planner answers, it falls back to a route on the bundled road map, so the crew is never left without directions.</li>
+<li><strong>Reporting.</strong> The tablet notices by itself when the ambulance is within 50 m of the scene or the hospital, so nobody has to radio "arrived". When the patient is on board, a pre-arrival notice goes to the hospital.</li>
+</ul>
+
+<figure>
+<img src="/assets/retina-ems/dispatch-triage.jpg" alt="The dispatcher's triage step: the call transcript on the left, the case details with accepted keywords and a locked location in the middle, and five triage codes on the right, none of them selected" width="100%">
+<figcaption>Triage happens in Dispatch, not at intake. The panel says it plainly: "Your call &middot; nothing is pre-selected".</figcaption>
+</figure>
+
+<figure>
+<img src="/assets/retina-ems/dispatch-hospitals.jpg" alt="The destination hospital step: a map with routes from the scene to five hospitals, and a list on the right sorted by drive time, from Hua Chiew Hospital at 4 minutes to Charoenkrung Pracharak at 19 minutes, each with an emergency room status" width="100%">
+<figcaption>Hospitals sorted by drive time from the scene. The app shows the facts; the dispatcher picks. The emergency room states here are demo values.</figcaption>
+</figure>
+
+<figure>
+<img src="/assets/retina-ems/copilot-en-route.jpg" alt="The ambulance tablet en route: a red header with Code Red and the patient's critical signs, a turn instruction, the route drawn on the map, a large Request Traffic Assist button, and a note that arrival is detected automatically" width="100%" style="max-width:640px;display:block;margin:0 auto">
+<figcaption>The crew's tablet on the way to the scene. "Request Traffic Assist" asks RETINA to clear the road ahead.</figcaption>
+</figure>
+
+<h2>How it is built</h2>
+<p>It is one web app (React and TypeScript) that builds to a single page, and each device opens the screen it needs. Every change to a case goes through one function that checks whether the change is allowed in the case's current state (a crew can't hand over a patient it never picked up, for example), applies it, and writes an entry to the case's history. Two people editing the same case can't overwrite each other, because a case is locked to one person while they work on it.</p>
+<p>There are two ways to run it. One is a Claude artifact, a web page hosted on claude.ai with a shared database that keeps every screen in sync. The other is a public GitHub Pages site backed by a small server on our lab PC that holds the case data and checks who is signed in. There are separate accounts for the call taker, dispatch and the crew, and each can only do its own side's actions. Both versions also send the case record to RETINA's hub, the server that ties the cameras, the traffic model and the route planner together. Maps are drawn from OpenStreetMap data we bundle ourselves, so there is no paid map service.</p>
+
+<h2>Testing</h2>
+<p>Because an emergency app that breaks halfway through a call is worse than no app, most of the effort went into tests.</p>
+<ul>
+<li><strong>161 unit tests</strong> (run on 2026-11-26). They try every allowed and forbidden change of a case's state, plus routing and the analytics.</li>
+<li><strong>End-to-end tests</strong> drive one scripted emergency through all three apps at once, in three browser windows side by side, from the call to the handover at the hospital. Along the way they check that nothing is pre-selected, that a case submitted at intake reaches the dispatch board within 3 seconds, and that a crew declining and then undoing works. The run with no hub took 1.7 minutes on 2026-11-26. The same story also passes against a fake hub and against the real login server with three separately signed-in browsers.</li>
+</ul>
+
+<h2>What is not done yet</h2>
+<ul>
+<li>The speech-to-text and the keyword finder are placeholders. In the demo, the transcript is a replay of a scripted call and the keywords come from a fixed list. The app is built so that a real speech and language model can replace them without changing the screens.</li>
+<li>Everything runs on made-up data: fictional patients and callers, demo hospital states. Real calls would need storage that complies with Thailand's personal data law (PDPA), per-person accounts, access logs, and sign-off from the national EMS institute and 1669 operators.</li>
+<li>We have not measured how long a change takes to reach another device over the internet. The tests above run on one machine.</li>
+<li>The screens are in English only so far.</li>
+</ul>
+<p>We will show the whole system, cameras, traffic model and these apps together, to the competition judges on 13 December 2026.</p>
